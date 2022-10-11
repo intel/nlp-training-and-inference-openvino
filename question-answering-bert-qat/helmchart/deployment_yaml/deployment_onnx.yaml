@@ -1,0 +1,58 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: w4-onnx-inference
+  labels:
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/instance: {{.Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  
+spec:
+    imagePullSecrets:
+     - name: "{{ .Values.imagePullSecrets }}"
+    serviceAccountName: {{ include "qat.serviceAccountName" . }}
+    hostNetwork: true
+    restartPolicy: "Never"
+    nodeSelector:
+        kubernetes.io/hostname: "{{ .Values.nodeselector.trainingnode }}"
+    securityContext:
+      runAsNonRoot: true
+      runAsUser: 1000  
+    containers:
+        
+        - name: w4-onnx-inference
+          
+          image:  "{{ .Values.image.onnxinferenceimage }}"
+          command: ["/bin/sh"]
+          args: ["-c", "chown openvino -R /home/inference && cd /home/inference && ./run_onnx_inference.sh "]
+          imagePullPolicy: "Always" 
+          env:
+            {{- range $key, $val := .Values.onnxinferenceenv }}
+             - name: {{ $key }}
+               value: {{ $val | quote }}
+            {{- end }}
+
+          volumeMounts:
+            - name: training
+              mountPath: /home/training
+            - name: inference
+              mountPath: /home/inference
+        
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+    volumes:
+        - name: training
+          hostPath:
+             path: {{.Values.mountpath.trainingvolume}}
+        - name: inference
+          hostPath:
+             path: {{.Values.mountpath.onnxinferencevolume}}
+
+
+     

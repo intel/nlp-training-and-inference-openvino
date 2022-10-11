@@ -1,0 +1,117 @@
+# Default values for qat.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext: {}
+  # fsGroup: 2000
+
+securityContext: {}
+  # capabilities:
+  #   drop:
+  #   - ALL
+  # readOnlyRootFilesystem: true
+  # runAsNonRoot: true
+  # runAsUser: 1000
+
+service:
+  type: ClusterIP
+  port: 80
+
+ingress:
+  enabled: false
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    - host: chart-example.local
+      paths: []
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources: {}
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 100m
+  #   memory: 128Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+image: 
+  registry: <registry_name>
+  trainingimage: openvino_optimum 
+  inferenceimage: openvino_optimum 
+  ovmsserver: openvino/model_server
+  onnxinferenceimage: openvino/onnxruntime_ep_ubuntu18:2022.1.0
+  imagePullSecrets: image-repo-secret
+mountpath:
+  trainingvolume: <current_working_gitfolder>/quantization_aware_training
+  inferencevolume: <current_working_gitfolder>/openvino_optimum_inference
+  onnxinferencevolume: <current_working_gitfolder>/onnxruntime_inference
+  ovmsmodel: <current_working_gitfolder>/quantization_aware_training/model/bert_int8
+nodeselector:
+  trainingnode: <train_node>
+  inferencenode: <inference_node>
+trainingenv:
+  TRAINING_FILE: "/home/training/training_scripts/run_qa.py"
+  MODEL_NAME: bert-large-uncased-whole-word-masking-finetuned-squad
+  DATASET_NAME: squad 
+  DO_TRAIN: True
+  MAX_SEQ_LENGTH: 256
+  MAX_TRAIN_SAMPLES: 50
+  MAX_EVAL_SAMPLES: 50
+  PER_DEVICE_TRAIN_BATCH_SIZE: 16
+  DOC_STRIDE: 128
+  NUM_TRAIN_EPOCHS: 1
+  DO_EVAL: True 
+  LEARNING_RATE: 3e-5
+  OUTPUT_DIR: /home/training/model/bert_int8
+  OVERWRITE_OUTPUT_DIR: True 
+  NNCF_CONFIG: /home/training/config/bert_config.json
+inferenceenv:
+  INFERENCE_SCRIPT: /home/inference/inference_scripts/bert_qa.py
+  MODEL_TYPE: ov
+  ADAPTER: openvino
+  MODEL_NAME: bert-large-uncased-whole-word-masking-finetuned-squad
+  MODEL_PATH: /home/training/model/bert_int8
+onnxinferenceenv:
+  INFERENCE_SCRIPT: /home/inference/bert_inference_onnxruntime.py
+  NITER: 10
+  ONNX_MODEL_PATH: /home/training/model/bert_int8/ov_model.onnx
+  DEVICE: CPU_FP32
+  MODEL_TYPE: INT8
+  MAX_SEQ_LENGTH: 256
+
+
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 100
+  targetCPUUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}

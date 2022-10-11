@@ -1,0 +1,56 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: optimum-inference
+  labels:
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/instance: {{.Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  
+spec:
+   imagePullSecrets:
+   - name: "{{ .Values.imagePullSecrets }}"
+   serviceAccountName: {{ include "qat.serviceAccountName" . }}
+   hostNetwork: true
+   restartPolicy: "OnFailure"
+   securityContext:
+    {{- toYaml .Values.podSecurityContext | nindent 8 }}
+   nodeSelector:
+        kubernetes.io/hostname: "{{ .Values.nodeselector.trainingnode }}"
+   containers:
+        - name: w4-optimum-inference
+          image: "{{ .Values.image.registry }}/{{ .Values.image.trainingimage }}"
+          imagePullPolicy: "Always"
+          command: ["/bin/sh"]
+          args: ["-c", " cd /home/inference && ls -l run_openvino_optimum_inference.sh && ./run_openvino_optimum_inference.sh"]
+
+          env:
+            {{- range $key, $val := .Values.inferenceenv }}
+             - name: {{ $key }}
+               value: {{ $val | quote }}
+            {{- end }}
+
+          volumeMounts:
+            - name: training
+              mountPath: /home/training
+            - name: inference
+              mountPath: /home/inference      
+        
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+   volumes:
+        - name: training
+          hostPath:
+             path: {{.Values.mountpath.trainingvolume}}
+        - name: inference
+          hostPath:
+             path: {{.Values.mountpath.inferencevolume}}
+
+
+     

@@ -1,0 +1,76 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ovms-server
+  labels:
+    {{- include "qat.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "qat.selectorLabels" . | nindent 6 }}
+
+  
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "qat.selectorLabels" . | nindent 8 }}
+    spec:
+      imagePullSecrets:
+       - name: "{{ .Values.imagePullSecrets }}"
+      serviceAccountName: {{ include "qat.serviceAccountName" . }}
+      hostNetwork: true
+      nodeSelector:
+        kubernetes.io/hostname: "{{ .Values.nodeselector.trainingnode }}"
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: w4-server
+          image: "{{ .Values.image.ovmsserver }}"
+          imagePullPolicy: "Always" 
+          ports:
+          - containerPort: 9000
+          readinessProbe:
+            tcpSocket:
+              port: 9000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          command:
+            - "/ovms/bin/ovms"
+          args:
+            - "--port=9000"
+            - "--model_name=bert"
+            - "--model_path=/bert"
+            - "--shape={\"input_ids\": \"(-1,-1)\", \"attention_mask\": \"(-1,-1)\",  \"token_type_ids\": \"(-1,-1)\"}"
+            - "--log_level=DEBUG"
+            - "--file_system_poll_wait_seconds=0"
+            - "--plugin_config={\"PERFORMANCE_HINT\":\"LATENCY\"}"
+            
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http 
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+          volumeMounts:
+            
+            - name: training
+              mountPath: /bert/1
+
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      volumes:
+        - name: training
+          hostPath:
+             path: {{.Values.mountpath.ovmsmodel}}
+
+     

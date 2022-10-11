@@ -1,0 +1,11 @@
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+version: "3"
+services:
+  openvino_optimum :
+    image: <registry>/openvino_optimum 
+    build:
+       context: .
+       dockerfile: Dockerfile_openvino_optimum
+ 
+  

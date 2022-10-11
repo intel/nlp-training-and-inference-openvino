@@ -1,0 +1,49 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: training
+  labels:
+    app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+    app.kubernetes.io/instance: {{.Release.Name | quote }}
+    app.kubernetes.io/version: {{ .Chart.AppVersion }}
+    helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+  annotations:
+    # This is what defines this resource as a hook. Without this line, the
+    # job is considered part of the release.
+    "helm.sh/hook": pre-install
+    "helm.sh/hook-weight": "-5"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  template:
+    metadata:
+      name: "{{.Release.Name}}"
+      labels:
+        app.kubernetes.io/managed-by: {{.Release.Service | quote }}
+        app.kubernetes.io/instance: {{.Release.Name | quote }}
+        helm.sh/chart: "{{.Chart.Name}}-{{.Chart.Version}}"
+    spec:
+      imagePullSecrets:
+       - name: "{{ .Values.imagePullSecrets }}"
+      hostNetwork: true
+      restartPolicy: "Never"
+      nodeSelector:
+        kubernetes.io/hostname: "{{ .Values.nodeselector.trainingnode }}"
+      containers:
+        - name: w4-training
+          image: "{{ .Values.image.registry }}/{{ .Values.image.trainingimage }}"
+          imagePullPolicy: "IfNotPresent"
+          env:
+            {{- range $key, $val := .Values.trainingenv }}
+             - name: {{ $key }}
+               value: {{ $val | quote}}
+            {{- end }}
+             
+          volumeMounts:
+            - name: training
+              mountPath: /home/training
+      volumes:
+        - name: training
+          hostPath:
+             path: {{.Values.mountpath.trainingvolume}}
+        
+
