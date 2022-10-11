@@ -16,33 +16,36 @@ This document details instructions on how to run the inference container locally
 ## Docker Run Command
 1. OpenVINO™ adapter:    
   
-  Replace `<OV_model.xml_directory>` with respective path e.g., `/home/inference/models`  
-  Replace `<registry>` with the local or private registry address. If using local registry, edit it to "localhost:5000"  
+   Replace `<OV_model.xml_directory>` with respective path e.g., `/home/inference/models`  
+   Replace `<registry>` with the local or private registry address. If using local registry, edit it to "localhost:5000"  
     
-  ```
-    cd openvino_optimum_inference
+   ```
+   cd openvino_optimum_inference
     
-    docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=<OV_model.xml_directory> --env MODEL_TYPE=ov  --env ADAPTER=openvino --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/model/bert_int8:/home/inference/models -v $(pwd):/home/inference <registry>/openvino_optimum -c "/home/inference/run_openvino_optimum_inference.sh"
-  ```
+   docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=<OV_model.xml_directory> --env MODEL_TYPE=ov  --env ADAPTER=openvino --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/model/bert_int8:/home/inference/models -v $(pwd):/home/inference <registry>/openvino_optimum -c "/home/inference/run_openvino_optimum_inference.sh"
+   ```
 2. OpenVINO™ Model Server adapter (Ensure OpenVINO™ Model Server is running, check with `docker ps`)     
    Get `<IP_ADDRESS_OMVSSERVER>` with following commands  
+     
    `docker ps` to get the Container Id of OpenVINO™ Model Server  
    `docker inspect <container id>` to get the IP Addredd  
-  ```
+     
+   ```
    cd openvino_optimum_inference
 
    docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=<IP_ADDRESS_OMVSSERVER>/models/bert --env MODEL_TYPE=ov  --env ADAPTER=ovms --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/model/bert_int8:/home/inference/models -v $(pwd):/home/inference <registry>/openvino_optimum -c "/home/inference/run_openvino_optimum_inference.sh"
-  ```
+   ```
 
 ## Running OpenVINO™ Model Server - BERT Model 
 ```
-cd <MODEL_PATH>
-#MODEL_PATH: Location where the .xml and .bin files of the model are located i.e., cd till `bert_int8` folder
+cd <MODEL_PATH>    #MODEL_PATH: Location where the .xml and .bin files of the model are located i.e., cd till `bert_int8` folder  
 mkdir -p bert/1  
 cp mapping_config.json  ov_model.bin  ov_model.xml bert/1/  
 ```
-
-`docker run  --rm -p 9000:9000 -v $PWD/bert:/bert openvino/model_server:latest --model_name bert --model_path /bert --port 9000 --shape "{\"input_ids\": \"(-1,-1)\", \"attention_mask\": \"(-1,-1)\", \"token_type_ids\": \"(-1,-1)\"}" --log_level DEBUG --file_system_poll_wait_seconds 0 --plugin_config "{\"PERFORMANCE_HINT\":\"LATENCY\"}"`
+  
+```
+docker run  --rm -p 9000:9000 -v $PWD/bert:/bert openvino/model_server:latest --model_name bert --model_path /bert --port 9000 --shape "{\"input_ids\": \"(-1,-1)\", \"attention_mask\": \"(-1,-1)\", \"token_type_ids\": \"(-1,-1)\"}" --log_level DEBUG --file_system_poll_wait_seconds 0 --plugin_config "{\"PERFORMANCE_HINT\":\"LATENCY\"}"
+```
 
 ### **Notes**:  
 Please find the volume mount and environment variable details below:
