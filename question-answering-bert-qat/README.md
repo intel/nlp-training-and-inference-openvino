@@ -15,7 +15,7 @@ This document details instructions on how to run quantization aware training & i
         *	Using Helm 
             *	[Steps to use the Helm chart](#helm-usage)
             *	[Use Case 1: Quantization Aware Training with Inference using OpenVINO™ Integration with Optimum*](#usecase-1)
-            *	[Use Case 2: Quantization Aware Training with Inference using OpenVINO™ model server](#usecase-2)
+            *	[Use Case 2: Quantization Aware Training with Inference using OpenVINO™ Model Server](#usecase-2)
             *	[Use Case 3: Quantization Aware Training with Inference using OpenVINO™ Execution Provider](#usecase-3)
             *	[Use Case 4: Only Inference](#usecase-4)
             *	[Clean up](#clean-up)
@@ -68,7 +68,7 @@ The workflow executes as follows
 ├── Dockerfiles
  ├──Dockerfile_openvino_optimum - Docker file to build OpenVINO™ Integration with Optimum[NNCF] image
  ├──docker-compose.yaml - Docker compose to build docker image
- ├──requirements_openvino_optimum - requirements file to be installed for the OpenVINO™ Integration with Optimum
+ ├──requirements_openvino_optimum - requirements file to be installed for the OpenVINO™ Integration with Optimum*
 ```
 ## Prerequisites 
 
@@ -337,7 +337,7 @@ Keep only one deployment-*.yaml file in the qat/templates folder to deploy just 
 
 1) For Onnxruntime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model format acceptable is .onnx
 2) For Huggingface API  with OpenVINO™ runtime, use `deployment_optimum.yaml`. Model format acceptable is pytorch or IR.xml
-3) For OpenVINO™ model server, use `deployment-ovms.yaml`. Model format acceptabe is IR.xml
+3) For OpenVINO™ Model Server, use `deployment-ovms.yaml`. Model format acceptabe is IR.xml
 
 
    ```
@@ -423,11 +423,11 @@ Please set the environment variable
  ```
 Please do
 ```
-	   helm uninstall qatchart
+   helm uninstall qatchart
 ``` 
 And then install it again
 ```
-	   helm uninstall qatchart
+   helm uninstall qatchart
 ```
 ### Helm timeout
  One issue we are seeing currently is if the training is taking longer time we see a timeout error during helm install command
