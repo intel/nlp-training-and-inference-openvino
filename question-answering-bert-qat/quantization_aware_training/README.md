@@ -19,14 +19,18 @@ This document details instructions on how to run the training container locally.
 1. On Intel* CPU:  
 Here `registry_name` should be local or private registry address. If using local registry, edit it to "localhost:5000"  
   
-    `cd quantization_aware_training`
+    ```
+    cd quantization_aware_training
 
-    `docker run --network=host -v "$(pwd)":/home/training --env MAX_TRAIN_SAMPLES=50 --env MAX_EVAL_SAMPLES=50 <registry_name>/openvino_optimum --doc_stride 128 --save_strategy epoch`
+    docker run --network=host -v "$(pwd)":/home/training --env MAX_TRAIN_SAMPLES=50 --env MAX_EVAL_SAMPLES=50 <registry_name>/openvino_optimum --doc_stride 128 --save_strategy epoch
+    ```  
 
 2. On NVIDIA* GPU:  
-    `cd quantization_aware_training`
+    ```
+    cd quantization_aware_training
 
-     `docker run --network=host -v "$(pwd)":/home/training --env CUDA_HOME=/usr/local/cuda -v /usr/local/cuda:/usr/local/cuda --env LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} --gpus 'all,capabilities=compute' <registry>/<registry_name>/openvino_optimum --doc_stride 128 --save_strategy epoch`
+    docker run --network=host -v "$(pwd)":/home/training --env CUDA_HOME=/usr/local/cuda -v /usr/local/cuda:/usr/local/cuda --env LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH} --gpus 'all,capabilities=compute' <registry>/<registry_name>/openvino_optimum --doc_stride 128 --save_strategy epoch
+    ```
 
 ### **Note**:  
 The following environment variables are passed as part of the docker run command. Currently some of these environment variables are set with the default values in the entrypoint script of the container. Default values are taken based on the finetuning experiments done previously.  
