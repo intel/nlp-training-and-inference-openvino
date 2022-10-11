@@ -36,8 +36,9 @@ This document details instructions on how to run quantization aware training & i
 The main objective of this automated AI/ML pipeline is to demonstrate quantization aware training using Neural Networks Compression Framework [NNCF] through OpenVINO™ Integration with Optimum* and deployment of inference application through various APIs i.e., Hugging Face API, Onnxruntime API and OpenVINO™ Model Server
 
 ## Block Diagram
+  
 
-![AI workflow](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/docs/usecase_flow.png)
+![AI workflow](docs/usecase_flow.png)
 
 This workflow is stitched together and deployed through Helm by using microservices/docker images which can be built or taken from Azure Marketplace.
 
