@@ -251,7 +251,7 @@ Build docker images to store in local image registry or pull image from Azure Ma
  ```
    kubectl get nodes  
      
-   azureuser@SRDev:~/frameworks.ai.edgecsp.quantization-training-inference-master/openvino_optimum_inference$ kubectl get nodes  
+   azureuser@SRDev:~/nlp-training-and-inference-openvino/question-answering-bert-qat/openvino_optimum_inference$ kubectl get nodes  
    NAME    STATUS   ROLES                  AGE   VERSION  
    srdev   Ready    control-plane,master   16d   v1.24.6+k3s1   
      
