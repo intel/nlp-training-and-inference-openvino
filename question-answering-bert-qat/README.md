@@ -118,9 +118,9 @@ The workflow executes as follows
 ## Download source code
 
 ```
-git clone  https://github.com/intel-innersource/frameworks.ai.edgecsp.quantization-training-inference.git
+git clone  https://github.com/intel/nlp-training-and-inference-openvino.git
 
-cd frameworks.ai.edgecsp.quantization-training-inference
+cd nlp-training-and-inference-openvino/question-answering-bert-qat
 ```
 ## Docker images 
 Build docker images to store in local image registry or pull image from Azure Marketplace. Please follow either Option i or Option ii 
