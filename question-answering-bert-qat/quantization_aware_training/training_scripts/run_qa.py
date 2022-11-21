@@ -14,17 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-Fine-tuning the library models for question answering using a slightly adapted version of the ?? Trainer.
+Fine-tuning a 🤗 Transformers model for question answering while applying quantization aware training with NNCF.
 """
-# You can also adapt this script on your own question answering task. Pointers for this are left as comments.
-# ==============================================================================
-# Copyright (C) 2021-2022 Intel Corporation
-# SPDX-License-Identifier: Apache-2.0
-# ==============================================================================
 
-# Modified from:
-# https://github.com/huggingface/transformers/blob/main/examples/pytorch/question-answering/run_qa.py
-#
+# You can also adapt this script on your own question answering task. Pointers for this are left as comments.
+
 import logging
 import os
 import sys
@@ -32,11 +26,8 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 import datasets
-from datasets import load_dataset, load_metric
-from optimum.intel.nncf import NNCFAutoConfig
-
 import transformers
-from trainer_qa import QuestionAnsweringTrainer
+from datasets import load_dataset
 from transformers import (
     AutoConfig,
     AutoModelForQuestionAnswering,
@@ -50,16 +41,19 @@ from transformers import (
     set_seed,
 )
 from transformers.trainer_utils import get_last_checkpoint
-from transformers.utils import check_min_version
+from transformers.utils import check_min_version, send_example_telemetry
 from transformers.utils.versions import require_version
+
+import evaluate
+from optimum.intel.openvino import OVConfig
+from trainer_qa import QuestionAnsweringOVTrainer
 from utils_qa import postprocess_qa_predictions
 
 
 # Will error if the minimal version of Transformers is not installed. Remove at your own risks.
-check_min_version("4.15.0")
+check_min_version("4.22.0")
 
-require_version("datasets>=1.8.0",
-                "To fix: pip install -r examples/pytorch/question-answering/requirements.txt")
+require_version("datasets>=1.8.0", "To fix: pip install -r examples/openvino/question-answering/requirements.txt")
 
 logger = logging.getLogger(__name__)
 
@@ -71,8 +65,7 @@ class ModelArguments:
     """
 
     model_name_or_path: str = field(
-        metadata={
-            "help": "Path to pretrained model or model identifier from huggingface.co/models"}
+        metadata={"help": "Path to pretrained model or model identifier from huggingface.co/models"}
     )
     config_name: Optional[str] = field(
         default=None, metadata={"help": "Pretrained config name or path if not the same as model_name"}
@@ -82,19 +75,19 @@ class ModelArguments:
     )
     cache_dir: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "Path to directory to store the pretrained models downloaded from huggingface.co"},
+        metadata={"help": "Path to directory to store the pretrained models downloaded from huggingface.co"},
     )
     model_revision: str = field(
         default="main",
-        metadata={
-            "help": "The specific model version to use (can be a branch name, tag name or commit id)."},
+        metadata={"help": "The specific model version to use (can be a branch name, tag name or commit id)."},
     )
     use_auth_token: bool = field(
         default=False,
         metadata={
-            "help": "Will use the token generated when running `transformers-cli login` (necessary to use this script "
-            "with private models)."
+            "help": (
+                "Will use the token generated when running `huggingface-cli login` (necessary to use this script "
+                "with private models)."
+            )
         },
     )
 
@@ -111,17 +104,14 @@ class DataTrainingArguments:
     dataset_config_name: Optional[str] = field(
         default=None, metadata={"help": "The configuration name of the dataset to use (via the datasets library)."}
     )
-    train_file: Optional[str] = field(
-        default=None, metadata={"help": "The input training data file (a text file)."})
+    train_file: Optional[str] = field(default=None, metadata={"help": "The input training data file (a text file)."})
     validation_file: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "An optional input evaluation data file to evaluate the perplexity on (a text file)."},
+        metadata={"help": "An optional input evaluation data file to evaluate the perplexity on (a text file)."},
     )
     test_file: Optional[str] = field(
         default=None,
-        metadata={
-            "help": "An optional input test data file to evaluate the perplexity on (a text file)."},
+        metadata={"help": "An optional input test data file to evaluate the perplexity on (a text file)."},
     )
     overwrite_cache: bool = field(
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
@@ -133,37 +123,46 @@ class DataTrainingArguments:
     max_seq_length: int = field(
         default=384,
         metadata={
-            "help": "The maximum total input sequence length after tokenization. Sequences longer "
-            "than this will be truncated, sequences shorter will be padded."
+            "help": (
+                "The maximum total input sequence length after tokenization. Sequences longer "
+                "than this will be truncated, sequences shorter will be padded."
+            )
         },
     )
     pad_to_max_length: bool = field(
         default=True,
         metadata={
-            "help": "Whether to pad all samples to `max_seq_length`. "
-            "If False, will pad the samples dynamically when batching to the maximum length in the batch (which can "
-            "be faster on GPU but will be slower on TPU)."
+            "help": (
+                "Whether to pad all samples to `max_seq_length`. If False, will pad the samples dynamically when"
+                " batching to the maximum length in the batch (which can be faster on GPU but will be slower on TPU)."
+            )
         },
     )
     max_train_samples: Optional[int] = field(
-        default=50,
+        default=None,
         metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of training examples to this "
-            "value if set."
+            "help": (
+                "For debugging purposes or quicker training, truncate the number of training examples to this "
+                "value if set."
+            )
         },
     )
     max_eval_samples: Optional[int] = field(
-        default=50,
+        default=None,
         metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of evaluation examples to this "
-            "value if set."
+            "help": (
+                "For debugging purposes or quicker training, truncate the number of evaluation examples to this "
+                "value if set."
+            )
         },
     )
     max_predict_samples: Optional[int] = field(
         default=None,
         metadata={
-            "help": "For debugging purposes or quicker training, truncate the number of prediction examples to this "
-            "value if set."
+            "help": (
+                "For debugging purposes or quicker training, truncate the number of prediction examples to this "
+                "value if set."
+            )
         },
     )
     version_2_with_negative: bool = field(
@@ -172,26 +171,28 @@ class DataTrainingArguments:
     null_score_diff_threshold: float = field(
         default=0.0,
         metadata={
-            "help": "The threshold used to select the null answer: if the best answer has a score that is less than "
-            "the score of the null answer minus this threshold, the null answer is selected for this example. "
-            "Only useful when `version_2_with_negative=True`."
+            "help": (
+                "The threshold used to select the null answer: if the best answer has a score that is less than "
+                "the score of the null answer minus this threshold, the null answer is selected for this example. "
+                "Only useful when `version_2_with_negative=True`."
+            )
         },
     )
     doc_stride: int = field(
         default=128,
-        metadata={
-            "help": "When splitting up a long document into chunks, how much stride to take between chunks."},
+        metadata={"help": "When splitting up a long document into chunks, how much stride to take between chunks."},
     )
     n_best_size: int = field(
         default=20,
-        metadata={
-            "help": "The total number of n-best predictions to generate when looking for an answer."},
+        metadata={"help": "The total number of n-best predictions to generate when looking for an answer."},
     )
     max_answer_length: int = field(
         default=30,
         metadata={
-            "help": "The maximum length of an answer that can be generated. This is needed because the start "
-            "and end predictions are not conditioned on one another."
+            "help": (
+                "The maximum length of an answer that can be generated. This is needed because the start "
+                "and end predictions are not conditioned on one another."
+            )
         },
     )
 
@@ -202,21 +203,17 @@ class DataTrainingArguments:
             and self.validation_file is None
             and self.test_file is None
         ):
-            raise ValueError(
-                "Need either a dataset name or a training/validation file/test_file.")
+            raise ValueError("Need either a dataset name or a training/validation file/test_file.")
         else:
             if self.train_file is not None:
                 extension = self.train_file.split(".")[-1]
-                assert extension in [
-                    "csv", "json"], "`train_file` should be a csv or a json file."
+                assert extension in ["csv", "json"], "`train_file` should be a csv or a json file."
             if self.validation_file is not None:
                 extension = self.validation_file.split(".")[-1]
-                assert extension in [
-                    "csv", "json"], "`validation_file` should be a csv or a json file."
+                assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
             if self.test_file is not None:
                 extension = self.test_file.split(".")[-1]
-                assert extension in [
-                    "csv", "json"], "`test_file` should be a csv or a json file."
+                assert extension in ["csv", "json"], "`test_file` should be a csv or a json file."
 
 
 def main():
@@ -224,15 +221,17 @@ def main():
     # or by passing the --help flag to this script.
     # We now keep distinct sets of args, for a cleaner separation of concerns.
 
-    parser = HfArgumentParser(
-        (ModelArguments, DataTrainingArguments, TrainingArguments))
+    parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     if len(sys.argv) == 2 and sys.argv[1].endswith(".json"):
         # If we pass only one argument to the script and it's the path to a json file,
         # let's parse it to get our arguments.
-        model_args, data_args, training_args = parser.parse_json_file(
-            json_file=os.path.abspath(sys.argv[1]))
+        model_args, data_args, training_args = parser.parse_json_file(json_file=os.path.abspath(sys.argv[1]))
     else:
         model_args, data_args, training_args = parser.parse_args_into_dataclasses()
+
+    # Sending telemetry. Tracking the example usage helps us better allocate resources to maintain them. The
+    # information sent is the one passed as arguments along with your Python/PyTorch versions.
+    send_example_telemetry("run_qa", model_args, data_args)
 
     # Setup logging
     logging.basicConfig(
@@ -285,7 +284,10 @@ def main():
     if data_args.dataset_name is not None:
         # Downloading and loading a dataset from the hub.
         raw_datasets = load_dataset(
-            data_args.dataset_name, data_args.dataset_config_name, cache_dir=model_args.cache_dir
+            data_args.dataset_name,
+            data_args.dataset_config_name,
+            cache_dir=model_args.cache_dir,
+            use_auth_token=True if model_args.use_auth_token else None,
         )
     else:
         data_files = {}
@@ -300,7 +302,12 @@ def main():
             data_files["test"] = data_args.test_file
             extension = data_args.test_file.split(".")[-1]
         raw_datasets = load_dataset(
-            extension, data_files=data_files, field="data", cache_dir=model_args.cache_dir)
+            extension,
+            data_files=data_files,
+            field="data",
+            cache_dir=model_args.cache_dir,
+            use_auth_token=True if model_args.use_auth_token else None,
+        )
     # See more about loading any type of standard or custom dataset (from files, python dict, pandas DataFrame, etc) at
     # https://huggingface.co/docs/datasets/loading_datasets.html.
 
@@ -334,9 +341,9 @@ def main():
     # Tokenizer check: this script requires a fast tokenizer.
     if not isinstance(tokenizer, PreTrainedTokenizerFast):
         raise ValueError(
-            "This example script only works for models that have a fast tokenizer. Checkout the big table of models "
-            "at https://huggingface.co/transformers/index.html#supported-frameworks to find the model types that meet this "
-            "requirement"
+            "This example script only works for models that have a fast tokenizer. Checkout the big table of models at"
+            " https://huggingface.co/transformers/index.html#supported-frameworks to find the model types that meet"
+            " this requirement"
         )
 
     # Preprocessing the datasets.
@@ -366,8 +373,7 @@ def main():
         # Some of the questions have lots of whitespace on the left, which is not useful and will make the
         # truncation of the context fail (the tokenized question will take a lots of space). So we remove that
         # left whitespace
-        examples[question_column_name] = [q.lstrip()
-                                          for q in examples[question_column_name]]
+        examples[question_column_name] = [q.lstrip() for q in examples[question_column_name]]
 
         # Tokenize our examples with truncation and maybe padding, but keep the overflows using a stride. This results
         # in one example possible giving several features when a context is long, each of those features having a
@@ -433,12 +439,10 @@ def main():
                     # Note: we could go after the last offset if the answer is the last word (edge case).
                     while token_start_index < len(offsets) and offsets[token_start_index][0] <= start_char:
                         token_start_index += 1
-                    tokenized_examples["start_positions"].append(
-                        token_start_index - 1)
+                    tokenized_examples["start_positions"].append(token_start_index - 1)
                     while offsets[token_end_index][1] >= end_char:
                         token_end_index -= 1
-                    tokenized_examples["end_positions"].append(
-                        token_end_index + 1)
+                    tokenized_examples["end_positions"].append(token_end_index + 1)
 
         return tokenized_examples
 
@@ -448,8 +452,8 @@ def main():
         train_dataset = raw_datasets["train"]
         if data_args.max_train_samples is not None:
             # We will select sample from whole data if argument is specified
-            train_dataset = train_dataset.select(
-                range(data_args.max_train_samples))
+            max_train_samples = min(len(train_dataset), data_args.max_train_samples)
+            train_dataset = train_dataset.select(range(max_train_samples))
         # Create train feature from dataset
         with training_args.main_process_first(desc="train dataset map pre-processing"):
             train_dataset = train_dataset.map(
@@ -462,16 +466,15 @@ def main():
             )
         if data_args.max_train_samples is not None:
             # Number of samples might increase during Feature Creation, We select only specified max samples
-            train_dataset = train_dataset.select(
-                range(data_args.max_train_samples))
+            max_train_samples = min(len(train_dataset), data_args.max_train_samples)
+            train_dataset = train_dataset.select(range(max_train_samples))
 
     # Validation preprocessing
     def prepare_validation_features(examples):
         # Some of the questions have lots of whitespace on the left, which is not useful and will make the
         # truncation of the context fail (the tokenized question will take a lots of space). So we remove that
         # left whitespace
-        examples[question_column_name] = [q.lstrip()
-                                          for q in examples[question_column_name]]
+        examples[question_column_name] = [q.lstrip() for q in examples[question_column_name]]
 
         # Tokenize our examples with truncation and maybe padding, but keep the overflows using a stride. This results
         # in one example possible giving several features when a context is long, each of those features having a
@@ -502,8 +505,7 @@ def main():
 
             # One example can give several spans, this is the index of the example containing this span of text.
             sample_index = sample_mapping[i]
-            tokenized_examples["example_id"].append(
-                examples["id"][sample_index])
+            tokenized_examples["example_id"].append(examples["id"][sample_index])
 
             # Set to None the offset_mapping that are not part of the context so it's easy to determine if a token
             # position is part of the context or not.
@@ -520,8 +522,8 @@ def main():
         eval_examples = raw_datasets["validation"]
         if data_args.max_eval_samples is not None:
             # We will select sample from whole data
-            eval_examples = eval_examples.select(
-                range(data_args.max_eval_samples))
+            max_eval_samples = min(len(eval_examples), data_args.max_eval_samples)
+            eval_examples = eval_examples.select(range(max_eval_samples))
         # Validation Feature Creation
         with training_args.main_process_first(desc="validation dataset map pre-processing"):
             eval_dataset = eval_examples.map(
@@ -534,8 +536,8 @@ def main():
             )
         if data_args.max_eval_samples is not None:
             # During Feature creation dataset samples might increase, we will select required samples again
-            eval_dataset = eval_dataset.select(
-                range(data_args.max_eval_samples))
+            max_eval_samples = min(len(eval_dataset), data_args.max_eval_samples)
+            eval_dataset = eval_dataset.select(range(max_eval_samples))
 
     if training_args.do_predict:
         if "test" not in raw_datasets:
@@ -543,8 +545,7 @@ def main():
         predict_examples = raw_datasets["test"]
         if data_args.max_predict_samples is not None:
             # We will select sample from whole data
-            predict_examples = predict_examples.select(
-                range(data_args.max_predict_samples))
+            predict_examples = predict_examples.select(range(data_args.max_predict_samples))
         # Predict Feature Creation
         with training_args.main_process_first(desc="prediction dataset map pre-processing"):
             predict_dataset = predict_examples.map(
@@ -557,8 +558,8 @@ def main():
             )
         if data_args.max_predict_samples is not None:
             # During Feature creation dataset samples might increase, we will select required samples again
-            predict_dataset = predict_dataset.select(
-                range(data_args.max_predict_samples))
+            max_predict_samples = min(len(predict_dataset), data_args.max_predict_samples)
+            predict_dataset = predict_dataset.select(range(max_predict_samples))
 
     # Data collator
     # We have already padded to max length if the corresponding flag is True, otherwise we need to pad in the data
@@ -590,23 +591,23 @@ def main():
                 {"id": k, "prediction_text": v, "no_answer_probability": 0.0} for k, v in predictions.items()
             ]
         else:
-            formatted_predictions = [
-                {"id": k, "prediction_text": v} for k, v in predictions.items()]
+            formatted_predictions = [{"id": k, "prediction_text": v} for k, v in predictions.items()]
 
-        references = [{"id": ex["id"], "answers": ex[answer_column_name]}
-                      for ex in examples]
+        references = [{"id": ex["id"], "answers": ex[answer_column_name]} for ex in examples]
         return EvalPrediction(predictions=formatted_predictions, label_ids=references)
 
-    metric = load_metric(
-        "squad_v2" if data_args.version_2_with_negative else "squad")
+    metric = evaluate.load("squad_v2" if data_args.version_2_with_negative else "squad")
 
     def compute_metrics(p: EvalPrediction):
         return metric.compute(predictions=p.predictions, references=p.label_ids)
-    nncf_config = NNCFAutoConfig.from_json(training_args.nncf_config)
+
+    ov_config = OVConfig(save_onnx_model=True)
 
     # Initialize our Trainer
-    trainer = QuestionAnsweringTrainer(
+    trainer = QuestionAnsweringOVTrainer(
         model=model,
+        ov_config=ov_config,
+        feature="question-answering",
         args=training_args,
         train_dataset=train_dataset if training_args.do_train else None,
         eval_dataset=eval_dataset if training_args.do_eval else None,
@@ -615,7 +616,6 @@ def main():
         data_collator=data_collator,
         post_process_function=post_processing_function,
         compute_metrics=compute_metrics,
-        nncf_config=nncf_config
     )
 
     # Training
@@ -630,8 +630,7 @@ def main():
 
         metrics = train_result.metrics
         max_train_samples = (
-            data_args.max_train_samples if data_args.max_train_samples is not None else len(
-                train_dataset)
+            data_args.max_train_samples if data_args.max_train_samples is not None else len(train_dataset)
         )
         metrics["train_samples"] = min(max_train_samples, len(train_dataset))
 
@@ -644,8 +643,7 @@ def main():
         logger.info("*** Evaluate ***")
         metrics = trainer.evaluate()
 
-        max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(
-            eval_dataset)
+        max_eval_samples = data_args.max_eval_samples if data_args.max_eval_samples is not None else len(eval_dataset)
         metrics["eval_samples"] = min(max_eval_samples, len(eval_dataset))
 
         trainer.log_metrics("eval", metrics)
@@ -658,17 +656,14 @@ def main():
         metrics = results.metrics
 
         max_predict_samples = (
-            data_args.max_predict_samples if data_args.max_predict_samples is not None else len(
-                predict_dataset)
+            data_args.max_predict_samples if data_args.max_predict_samples is not None else len(predict_dataset)
         )
-        metrics["predict_samples"] = min(
-            max_predict_samples, len(predict_dataset))
+        metrics["predict_samples"] = min(max_predict_samples, len(predict_dataset))
 
         trainer.log_metrics("predict", metrics)
         trainer.save_metrics("predict", metrics)
 
-    kwargs = {"finetuned_from": model_args.model_name_or_path,
-              "tasks": "question-answering"}
+    kwargs = {"finetuned_from": model_args.model_name_or_path, "tasks": "question-answering"}
     if data_args.dataset_name is not None:
         kwargs["dataset_tags"] = data_args.dataset_name
         if data_args.dataset_config_name is not None:

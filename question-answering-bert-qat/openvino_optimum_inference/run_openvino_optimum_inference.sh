@@ -1,4 +1,6 @@
 #!/bin/bash
+python3 -m pip install --upgrade pip
+python3 -m pip install --no-cache-dir git+https://github.com/huggingface/optimum-intel.git#egg=optimum-intel[openvino,nncf]
 EXTRAS="$*"
 ENTRYPOINT_ARGS=""
 echo $INFERENCE_SCRIPT

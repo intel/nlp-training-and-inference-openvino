@@ -1,12 +1,12 @@
 # -------------------------------------------------------------------------
 # Copyright (C) 2022, Intel Corporation
 # SPDX-License-Identifier: Apache-2.0
-# Major Portions of this code are copyright of their respective authors and released under the Apache License Version 2.0:- openvino_contrib.
-# For licensing see https://github.com/openvinotoolkit/openvino_contrib/blob/optimum-adapters/LICENSE
+# Major Portions of this code are copyright of their respective authors and released under the Apache License Version 2.0:-
+# For licensing see https://github.com/huggingface/optimum-intel/blob/main/LICENSE
 # -------------------------------------------------------------------------
 
-from transformers import AutoTokenizer, AutoConfig
-from optimum.intel.openvino import OVAutoModelForQuestionAnswering
+from transformers import AutoTokenizer, AutoConfig,pipeline
+from optimum.intel.openvino import OVModelForQuestionAnswering
 from argparse import ArgumentParser
 import time
 import sys
@@ -51,41 +51,26 @@ else:
 
 
 # Load model from HuggingFace Hub
-config = AutoConfig.from_pretrained(args.modelname)
+
 tokenizer = AutoTokenizer.from_pretrained(args.modelname)
 if args.modeltype == 'pt' and args.adapter == 'openvino':
-    model = OVAutoModelForQuestionAnswering.from_pretrained(
-        args.modelpath, from_pt=True)
+    model = OVModelForQuestionAnswering.from_pretrained(
+        args.modelpath,from_transformers=True)
 elif args.modeltype == 'ov' and args.adapter == 'openvino':
-    model = OVAutoModelForQuestionAnswering.from_pretrained(
-        args.modelpath, config=config)
-elif args.modeltype == 'ov' and args.adapter == 'ovms':
-    model = OVAutoModelForQuestionAnswering.from_pretrained(
-        args.modelpath, inference_backend="ovms", config=config
-    )
+    model = OVModelForQuestionAnswering.from_pretrained(
+        args.modelpath)
 else:
     sys.exit("Model Type not found")
 rows = []
-input = tokenizer.encode_plus(
-    question, context, return_tensors="np", add_special_tokens=True
-)
-
+pipe = pipeline("question-answering", model=model, tokenizer=tokenizer)
 # warmup step
-model(**input, return_dict=True)
+outputs = pipe(question,context)
 num_runs = args.iterations
 start = time.time()
 for _ in range(num_runs):
-    result = model(**input, return_dict=True)
+    outputs = pipe(question,context)
 average_time = ((time.time() - start) * 1e3)/num_runs
-print(f"Average inference time: {average_time}")
-answer_start_scores = result["start_logits"]
-answer_end_scores = result["end_logits"]
-
-input_ids = input["input_ids"].tolist()[0]
-answer_start = np.argmax(answer_start_scores)
-answer_end = np.argmax(answer_end_scores) + 1
-answer = tokenizer.convert_tokens_to_string(
-    tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
-)
 print(f"Question: {question}")
-print(f"Answer: {answer}")
+print(f"Context: {context}")
+print("Answer",outputs['answer'])
+print(f"Average inference time: {average_time}")
