@@ -1,6 +1,0 @@
-Moving 0 files to the new cache system
-Inference on OpenVINOExecutionProvider
-Average inference time: 69.52118873596191
-Question: Which NFL team represented the NFC at Super Bowl 50?
-Answer: carolina panthers
-[35mE: [xLinkUsb] [    804728] [python3] usb_find_device_with_bcd:266	Library has not been initialized when loaded[0m
