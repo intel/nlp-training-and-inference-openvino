@@ -1,6 +1,8 @@
 #!/bin/bash
 python3 -m pip install --upgrade pip
 python3 -m pip install --no-cache-dir git+https://github.com/huggingface/optimum-intel.git#egg=optimum-intel[openvino,nncf]
+export PATH=$PATH:/home/openvino/.local/lib:/home/openvino/.local/bin
+
 EXTRAS="$*"
 ENTRYPOINT_ARGS=""
 echo $INFERENCE_SCRIPT
@@ -13,7 +15,7 @@ if [ -f "$INFERENCE_SCRIPT" ]; then
     ENTRYPOINT_ARGS+="${ADAPTER:+ --adapter $ADAPTER}"
     ENTRYPOINT_ARGS+="${ITERATIONS:+ --iterations $ITERATIONS}"
     ENTRYPOINT_ARGS+="${EXTRAS:+ $EXTRAS}"
-    python $INFERENCE_SCRIPT$ENTRYPOINT_ARGS | tee /home/inference/logs.txt
+    python3 $INFERENCE_SCRIPT$ENTRYPOINT_ARGS | tee /home/inference/logs.txt
 else
     echo 'Please pass the inference script.'
 fi

@@ -1,13 +1,13 @@
 #!/bin/bash
+
 python3 -m pip install --upgrade pip
+pip install python-git
+python3 -m pip install Ninja
 python3 -m pip install --no-cache-dir git+https://github.com/huggingface/optimum-intel.git#egg=optimum-intel[openvino,nncf]
 python3 -m pip install --no-cache-dir git+https://github.com/AlexKoff88/nncf_pytorch.git@ak/qdq_per_channel#egg=nncf
-python3 -m pip install --no-cache-dir protobuf==3.19.4
-python3 -m pip install --no-cache-dir seqeval
-python3 -m pip install --no-cache-dir evaluate
-python3 -m pip install --no-cache-dir accelerate
-python3 -m pip install --no-cache-dir datasets
-python3 -m pip install --no-cache-dir openvino-dev==2022.2.0
+python3 -m pip install --no-cache-dir protobuf==3.19.4 seqeval evaluate accelerate datasets openvino-dev==2022.2.0
+export PATH=$PATH:/home/openvino/.local/lib:/home/openvino/.local/bin
+
 
 EXTRAS="$*"
 ENTRYPOINT_ARGS=""
@@ -33,4 +33,4 @@ ENTRYPOINT_ARGS+=" --output_dir ${OUTPUT_DIR:- /home/training/output/bert_finetu
 ENTRYPOINT_ARGS+=" --overwrite_output_dir ${OVERWRITE_OUTPUT_DIR:- True}"
 ENTRYPOINT_ARGS+="${EXTRAS:+ $EXTRAS}"
 
-python "${TRAINING_FILE:-/home/training/training_scripts/run_qa.py}"$ENTRYPOINT_ARGS | tee /home/training/logs.txt
+python3 "${TRAINING_FILE:-/home/training/training_scripts/run_qa.py}"$ENTRYPOINT_ARGS | tee /home/training/logs.txt

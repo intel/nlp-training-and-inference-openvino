@@ -19,8 +19,8 @@ spec:
    nodeSelector:
         kubernetes.io/hostname: "{{ .Values.nodeselector.trainingnode }}"
    containers:
-        - name: w4-optimum-inference
-          image: "{{ .Values.image.registry }}/{{ .Values.image.trainingimage }}"
+        - name: openvino-optimum-inference
+          image: "{{ .Values.image.baseimage}}"
           imagePullPolicy: "Always"
           command: ["/bin/sh"]
           args: ["-c", " cd /home/inference && ls -l run_openvino_optimum_inference.sh && ./run_openvino_optimum_inference.sh"]

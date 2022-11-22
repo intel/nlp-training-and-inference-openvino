@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: Pod
 metadata:
-  name: w4-onnx-inference
+  name: onnx-inference
   labels:
     app.kubernetes.io/managed-by: {{.Release.Service | quote }}
     app.kubernetes.io/instance: {{.Release.Name | quote }}
@@ -21,9 +21,9 @@ spec:
       runAsUser: 1000  
     containers:
         
-        - name: w4-onnx-inference
+        - name: onnxovep-optimum-inference
           
-          image:  "{{ .Values.image.onnxinferenceimage }}"
+          image:  "{{ .Values.image.baseimage }}"
           command: ["/bin/sh"]
           args: ["-c", "chown openvino -R /home/inference && cd /home/inference && ./run_onnx_inference.sh "]
           imagePullPolicy: "Always" 
