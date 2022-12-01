@@ -6,6 +6,8 @@ import time
 import sys
 from argparse import ArgumentParser
 import os
+import pathlib
+import pandas as pd
 
 def build_argparser():
     parser = ArgumentParser(add_help=False)
@@ -18,25 +20,21 @@ def build_argparser():
     args.add_argument("-ni", "--niter", type=int,
                       default=10, help="Number of Iterations")
     args.add_argument("-ip", "--inputpath",
-                      default='/home/inference/inputs/input.txt', help="Path to the input file")
-    args.add_argument("-cp", "--contextpath",
-                      default='/home/inference/inputs/context.txt', help="Path to the Context file")
-
+                      default='/home/inference/data/input.csv', help="Path to the input file")
+    args.add_argument("-op", "--outputpath",
+                      default='/home/inference/data/output.csv', help="Path to the output file")
     return parser
 
 def run_inference():
     args = build_argparser().parse_args()
-
     if os.path.exists(args.inputpath):
-        with open(args.inputpath, 'r',encoding="utf-8") as inputfile:
-            question = inputfile.read()
+        if pathlib.Path(args.inputpath).suffix =='.csv':
+            csv_data = pd.read_csv(args.inputpath)
+            input_data = [row for row in csv_data.values]
+        else:
+            sys.exit('Input file extension is not supported')
     else:
         sys.exit("Input file not found.")
-    if os.path.exists(args.contextpath):
-        with open(args.contextpath, 'r',encoding="utf-8") as inputfile:
-            context = inputfile.read()
-    else:
-        sys.exit("Context file not found.")
 
     tokenizer = AutoTokenizer.from_pretrained(args.modelname)
 
@@ -47,31 +45,38 @@ def run_inference():
     else:
         print("Provider " + str(args.provider)+ " is not supported. Exiting...")
         exit(0)
-    inputs = tokenizer(question, context, return_tensors="pt")
-    start_positions = torch.tensor([1])
-    end_positions = torch.tensor([3])
-    #Warmup Step
-    outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
-    start = time.time()
-    num_runs=args.niter
-    for _ in range(num_runs):
+    rows=[]
+    for context,question in input_data:
+        inputs = tokenizer(question, context, return_tensors="pt")
+        start_positions = torch.tensor([1])
+        end_positions = torch.tensor([3])
+        #Warmup Step
         outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
-    average_time = ((time.time() - start) * 1e3)/num_runs
-    print(f"Average inference time: {average_time}")
-    start_scores = outputs.start_logits
-    end_scores = outputs.end_logits
-    input = tokenizer.encode_plus(
-        question, context, return_tensors="np", add_special_tokens=True
-    )
-    input_ids = input["input_ids"].tolist()[0]
-    answer_start = np.argmax(start_scores)
-    answer_end = np.argmax(end_scores) + 1
-    answer = tokenizer.convert_tokens_to_string(
-        tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
-    )
-
-    print(f"Question: {question}")
-    print(f"Answer: {answer}")  
+        start = time.time()
+        num_runs=args.niter
+        for _ in range(num_runs):
+            outputs = model(**inputs, start_positions=start_positions, end_positions=end_positions)
+        average_time = ((time.time() - start) * 1e3)/num_runs
+        
+        start_scores = outputs.start_logits
+        end_scores = outputs.end_logits
+        input = tokenizer.encode_plus(
+            question, context, return_tensors="np", add_special_tokens=True
+        )
+        input_ids = input["input_ids"].tolist()[0]
+        answer_start = np.argmax(start_scores)
+        answer_end = np.argmax(end_scores) + 1
+        answer = tokenizer.convert_tokens_to_string(
+            tokenizer.convert_ids_to_tokens(input_ids[answer_start:answer_end])
+        )
+        print(f"Question: {question}")
+        print(f"Answer: {answer}")  
+        print(f"Average inference time: {average_time}")
+        rows.append([context,question,answer])
+    headers = ['Context','Question', 'Answer']
+    answers = pd.DataFrame(rows, columns=headers)
+    answers.to_csv(args.outputpath, index=False)
+    print('Results is stored in Output CSV file')
 
 if __name__ == '__main__':
     run_inference()

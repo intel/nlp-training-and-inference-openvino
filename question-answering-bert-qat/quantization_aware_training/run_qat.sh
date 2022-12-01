@@ -3,7 +3,7 @@
 python3 -m pip install --upgrade pip
 pip install python-git
 python3 -m pip install Ninja
-python3 -m pip install --no-cache-dir git+https://github.com/huggingface/optimum-intel.git#egg=optimum-intel[openvino,nncf]
+python3 -m pip install --no-cache-dir git+https://github.com/huggingface/optimum-intel.git@v1.5.2#egg=optimum-intel[openvino,nncf]
 python3 -m pip install --no-cache-dir git+https://github.com/AlexKoff88/nncf_pytorch.git@ak/qdq_per_channel#egg=nncf
 python3 -m pip install --no-cache-dir protobuf==3.19.4 seqeval evaluate accelerate datasets openvino-dev==2022.2.0
 export PATH=$PATH:/home/openvino/.local/lib:/home/openvino/.local/bin
