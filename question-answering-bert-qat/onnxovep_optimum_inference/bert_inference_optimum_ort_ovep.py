@@ -23,11 +23,19 @@ def build_argparser():
                       default='/home/inference/data/input.csv', help="Path to the input file")
     args.add_argument("-op", "--outputpath",
                       default='/home/inference/data/output.csv', help="Path to the output file")
+    args.add_argument("-q", "--question",type=str,
+                      help="Question")
+    args.add_argument("-c", "--context",type=str,
+                      help="Context")
     return parser
 
 def run_inference():
     args = build_argparser().parse_args()
-    if os.path.exists(args.inputpath):
+    input_data=[]
+    if args.question and args.context:
+        input_data.append([args.context,args.question])
+
+    elif os.path.exists(args.inputpath):
         if pathlib.Path(args.inputpath).suffix =='.csv':
             csv_data = pd.read_csv(args.inputpath)
             input_data = [row for row in csv_data.values]

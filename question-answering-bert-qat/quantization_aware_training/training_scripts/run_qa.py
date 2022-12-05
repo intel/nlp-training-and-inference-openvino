@@ -602,6 +602,7 @@ def main():
         return metric.compute(predictions=p.predictions, references=p.label_ids)
 
     ov_config = OVConfig(save_onnx_model=True)
+    ov_config.compression['overflow_fix'] = 'enable'
 
     # Initialize our Trainer
     trainer = QuestionAnsweringOVTrainer(
