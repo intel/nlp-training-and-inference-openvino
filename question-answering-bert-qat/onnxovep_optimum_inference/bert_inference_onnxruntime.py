@@ -76,6 +76,10 @@ def build_argparser():
                       default='/home/inference/data/input.csv', help="Path to the input file")
     args.add_argument("-op", "--outputpath",
                       default='/home/inference/data/output.csv', help="Path to the output file")
+    args.add_argument("-q", "--question",type=str,
+                      help="Question")
+    args.add_argument("-c", "--context",type=str,
+                      help="Context")
 
     return parser
 
@@ -217,14 +221,17 @@ def run_onnx(question,context):
 
 
 def run_inference():
-    if os.path.exists(input_args.inputpath):
+    input_data=[]
+    if input_args.question and input_args.context:
+        input_data.append([input_args.context,input_args.question])
+    elif os.path.exists(input_args.inputpath):
         if pathlib.Path(input_args.inputpath).suffix =='.csv':
             csv_data = pd.read_csv(input_args.inputpath)
             input_data = [row for row in csv_data.values]
         else:
             sys.exit('Input file extension is not supported')
     else:
-        sys.exit("Input file not found.")
+        sys.exit("Input not found.")
     rows=[]
     for context,question in input_data:
         if torch_model:

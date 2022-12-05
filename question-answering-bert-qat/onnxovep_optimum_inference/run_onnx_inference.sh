@@ -10,9 +10,7 @@ if [ -f "$INFERENCE_SCRIPT" ]; then
     ENTRYPOINT_ARGS+="${NITER:+ --niter $NITER}"
     ENTRYPOINT_ARGS+=" --inputpath ${INPUT_PATH:- /home/inference/data/input.csv}"
     ENTRYPOINT_ARGS+=" --outputpath ${OUTPUT_PATH:- /home/inference/data/output.csv}"
-    ENTRYPOINT_ARGS+="${QUESTION:+ --question \"$QUESTION\"}"
-    ENTRYPOINT_ARGS+="${CONTEXT:+ --context \"$CONTEXT\"}"
-    python3 $INFERENCE_SCRIPT$ENTRYPOINT_ARGS | tee /home/inference/logs.txt
+    python3 $INFERENCE_SCRIPT$ENTRYPOINT_ARGS --question "$1" --context "$2" | tee /home/inference/logs.txt
     sleep 10
 else
     echo 'Please pass the inference script.'

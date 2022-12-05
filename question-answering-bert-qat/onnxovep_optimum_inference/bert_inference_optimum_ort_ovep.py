@@ -34,7 +34,6 @@ def run_inference():
     input_data=[]
     if args.question and args.context:
         input_data.append([args.context,args.question])
-
     elif os.path.exists(args.inputpath):
         if pathlib.Path(args.inputpath).suffix =='.csv':
             csv_data = pd.read_csv(args.inputpath)
@@ -42,7 +41,7 @@ def run_inference():
         else:
             sys.exit('Input file extension is not supported')
     else:
-        sys.exit("Input file not found.")
+        sys.exit("Input not found.")
 
     tokenizer = AutoTokenizer.from_pretrained(args.modelname)
 

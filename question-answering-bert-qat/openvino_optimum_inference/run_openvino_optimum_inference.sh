@@ -12,7 +12,7 @@ if [ -f "$INFERENCE_SCRIPT" ]; then
     ENTRYPOINT_ARGS+="${ITERATIONS:+ --iterations $ITERATIONS}"
     ENTRYPOINT_ARGS+=" --inputpath ${INPUT_PATH:- /home/inference/data/input.csv}"
     ENTRYPOINT_ARGS+=" --outputpath ${OUTPUT_PATH:- /home/inference/data/output.csv}"
-    python3 $INFERENCE_SCRIPT$ENTRYPOINT_ARGS | tee /home/inference/logs.txt
+    python3 $INFERENCE_SCRIPT$ENTRYPOINT_ARGS --question "$1" --context "$2" | tee /home/inference/logs.txt
 else
     echo 'Please pass the inference script.'
 fi
