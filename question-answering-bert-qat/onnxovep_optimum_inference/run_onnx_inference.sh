@@ -1,6 +1,6 @@
 #!/bin/bash
 python3 -m pip install --upgrade pip
-python3 -m pip install --no-cache-dir onnxruntime-openvino optimum
+python3 -m pip install --no-cache-dir onnxruntime-openvino==1.13.1 optimum==1.5.1
 ENTRYPOINT_ARGS=""
 echo $INFERENCE_SCRIPT
 if [ -f "$INFERENCE_SCRIPT" ]; then
