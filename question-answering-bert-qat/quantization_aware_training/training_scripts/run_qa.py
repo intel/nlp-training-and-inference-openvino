@@ -602,6 +602,16 @@ def main():
         return metric.compute(predictions=p.predictions, references=p.label_ids)
 
     ov_config = OVConfig(save_onnx_model=True)
+
+    # There is a known issue with AVX2 and AVX512 CPU devices. The issue appears with 8-bit matrix calculations 
+    # with tensors which elements are close to the maximum or saturated. AVX2 and AVX512 utilize a 16-bit register
+    # to store the result of operations on tensors. In case when tensors are saturated the buffer overflow happens. 
+    # This leads to accuracy degradation.
+    # Refer below links for more details:
+    # https://github.com/microsoft/onnxruntime/issues/6004
+    # https://github.com/openvinotoolkit/nncf/blob/master/docs/compression_algorithms/Quantization.md
+    # Below parameter is enabled in nncf config to apply the overflow fix.
+
     ov_config.compression['overflow_fix'] = 'enable'
 
     # Initialize our Trainer
