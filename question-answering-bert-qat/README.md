@@ -53,7 +53,7 @@ The workflow executes as follows
 ```
 ├──quantization_aware_training - Training related scripts
 ├──openvino_optimum_inference - Hugging Face API inference scripts with OpenVINO™ Runtime
-├──onnxruntime_inference - ONNX Runtime API inference scripts with OpenVINO™ Runtime
+├──onnxovep_optimum_inference - ONNX Runtime API inference scripts with OpenVINO™ Runtime
 ├── helmchart
  ├── deployment_yaml
    ├──deployment_onnx.yaml - Deploys onnxruntime with OpenVINO™ container
@@ -62,14 +62,10 @@ The workflow executes as follows
   ├── charts
   ├── templates
    ├──pre_install_job.yaml - Deploys Quantization Aware Training container
-   ├──deployment_openvino_optimum.yaml - Deploys Huggingface API inference container 
+   ├──deployment_optimum.yaml - Deploys Huggingface API inference container 
  ├── chart.yaml
  ├── values.yaml
  └── README.md
-├── Dockerfiles
- ├──Dockerfile_openvino_optimum - Docker file to build OpenVINO™ Integration with Optimum[NNCF] image
- ├──docker-compose.yaml - Docker compose to build docker image
- ├──requirements_openvino_optimum - requirements file to be installed for the OpenVINO™ Integration with Optimum*
 ```
 ## Prerequisites 
 

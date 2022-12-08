@@ -1,3 +1,9 @@
+# -------------------------------------------------------------------------
+# Copyright (C) 2022, Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+# Major Portions of this code are copyright of their respective authors and released under the Apache License Version 2.0:-
+# For licensing see https://github.com/huggingface/optimum/blob/main/LICENSE
+# -------------------------------------------------------------------------
 from transformers import AutoTokenizer
 from optimum.onnxruntime import ORTModelForQuestionAnswering
 import torch
