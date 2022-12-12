@@ -83,5 +83,8 @@ for context,question in input_data:
     rows.append([context,question,outputs['answer']])
 headers = ['Context','Question', 'Answer']
 answers = pd.DataFrame(rows, columns=headers)
-answers.to_csv(args.outputpath, index=False)
-print('Results is stored in Output CSV file')
+if os.path.exists(os.path.dirname(args.outputpath)) and pathlib.Path(args.outputpath).suffix =='.csv':
+    answers.to_csv(args.outputpath, index=False)
+    print('Results is stored in Output CSV file')
+else:
+    print('Output is not stored in Output CSV file as ouputpath not exists')

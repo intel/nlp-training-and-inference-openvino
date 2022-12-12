@@ -207,14 +207,16 @@ class DataTrainingArguments:
         else:
             if self.train_file is not None:
                 extension = self.train_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`train_file` should be a csv or a json file."
+                if not extension in ["csv", "json"]:
+                    raise ValueError("`train_file` should be a csv or a json file.")
             if self.validation_file is not None:
                 extension = self.validation_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`validation_file` should be a csv or a json file."
+                if not extension in ["csv", "json"]:
+                    raise ValueError("`validation_file` should be a csv or a json file.")
             if self.test_file is not None:
                 extension = self.test_file.split(".")[-1]
-                assert extension in ["csv", "json"], "`test_file` should be a csv or a json file."
-
+                if not extension in ["csv", "json"]:
+                    raise ValueError("`test_file` should be a csv or a json file.")
 
 def main():
     # See all possible arguments in src/transformers/training_args.py

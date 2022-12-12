@@ -19,12 +19,12 @@ Run the command below in the root of the application.
 
 ### Docker run command to run INT8 ONNX file on OpenVINOExecutionProvider:  
 
-`docker run -it --entrypoint /bin/bash --env PROVIDER=OpenVINOExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/outputs/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_onnx_inference.sh"`
+`docker run -it --entrypoint /bin/bash --env PROVIDER=OpenVINOExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/output/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_onnx_inference.sh"`
 
 
 ### Docker run command to run INT8 ONNX file(generated after finetuning on the train container) on CPU Execution Provider:  
 
-`docker run -it --entrypoint /bin/bash --env PROVIDER=CPUExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/outputs/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_onnx_inference.sh"`
+`docker run -it --entrypoint /bin/bash --env PROVIDER=CPUExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/output/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_onnx_inference.sh"`
 
 
 ## Summary:  
@@ -47,6 +47,6 @@ This file will be read and inference will be performed and the corresponding out
 - In case of single input, the variables context and question are used to facilitate this.  
   These variables are passed as an argument to the inference script. If they are empty strings or not passed as argument, then the default behaviour is to read the input csv file and run inference. If we want to try with question and context variable, use the below command  
      
-  `docker run -it --entrypoint /bin/bash --env PROVIDER=OpenVINOExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/outputs/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c '/home/inference/run_onnx_inference.sh "Where do I live?" "My name is Sarah and I live in London"'
+  `docker run -it --entrypoint /bin/bash --env PROVIDER=OpenVINOExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/output/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c '/home/inference/run_onnx_inference.sh "Where do I live?" "My name is Sarah and I live in London"'
   `
 

@@ -255,8 +255,11 @@ def run_inference():
         rows.append([context,question,results['answer']])
     headers = ['Context','Question', 'Answer']
     answers = pd.DataFrame(rows, columns=headers)
-    answers.to_csv(input_args.outputpath, index=False)
-    print('Results is stored in Output CSV file')
+    if os.path.exists(os.path.dirname(input_args.outputpath)) and pathlib.Path(input_args.outputpath).suffix =='.csv':
+        answers.to_csv(input_args.outputpath, index=False)
+        print('Results is stored in Output CSV file')
+    else:
+        print('Output is not stored in Output CSV file as ouputpath not exists')
 
 
 if __name__ == '__main__':
