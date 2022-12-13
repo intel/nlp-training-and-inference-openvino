@@ -12,6 +12,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+# You can also adapt this script on your own question answering task. Pointers for this are left as comments.
+# ==============================================================================
+# Copyright (C) 2021-2022 Intel Corporation
+# SPDX-License-Identifier: Apache-2.0
+# ==============================================================================
+
+# Reference:
+# https://github.com/huggingface/transformers/blob/main/examples/pytorch/question-answering/utils_qa.py
+#
 """
 Post-processing utilities for question answering.
 """
