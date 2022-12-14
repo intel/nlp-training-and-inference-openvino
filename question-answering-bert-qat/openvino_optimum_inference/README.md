@@ -20,7 +20,7 @@ This document details instructions on how to run the inference container locally
    ```
    cd openvino_optimum_inference
     
-   docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=/home/inference/models --env MODEL_TYPE=ov --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/output/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_openvino_optimum_inference.sh"
+   docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=/home/inference/models --env MODEL_TYPE=ov --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models -v $(pwd):/home/inference openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_openvino_optimum_inference.sh"
    ```
 ### **Notes**:  
 Please find the volume mount and environment variable details below:
@@ -40,7 +40,7 @@ We have options to run inference on single and multiple inputs.
 This file will be read and inference will be performed and the corresponding outputs will be saved as outputs.csv.  
 - In case of single input, the variables context and question are used to facilitate this.  
   These variables are passed as an argument to the inference script. If they are empty strings or not passed as argument, then the default behaviour is to read the input csv file and run inference. If we want to try with question and context variable, use the below command
-     docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=/home/inference/models --env MODEL_TYPE=ov --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/output/bert_finetuned_model:/home/inference/models -v $(pwd):/home/inference openvino/ubuntu20_dev:2022.2.0 -c '/home/inference/run_openvino_optimum_inference.sh "Where do I live?" "My name is Sarah and I live in London"'
+     docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=/home/inference/models --env MODEL_TYPE=ov --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models -v $(pwd):/home/inference openvino/ubuntu20_dev:2022.2.0 -c '/home/inference/run_openvino_optimum_inference.sh "Where do I live?" "My name is Sarah and I live in London"'
 
 #### **Model Type:**
 Pass env variable MODEL_TYPE= pt inorder to load Pytorch file.

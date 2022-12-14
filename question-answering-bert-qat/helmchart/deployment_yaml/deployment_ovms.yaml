@@ -44,7 +44,7 @@ spec:
             - "--port=9000"
             - "--model_name=bert"
             - "--model_path=/bert"
-            - "--shape={\"input_ids\": \"(-1,-1)\", \"attention_mask\": \"(-1,-1)\",  \"token_type_ids\": \"(-1,-1)\"}"
+            - "--shape={\"input_ids\": \"(1,256)\", \"attention_mask\": \"(1,256)\",  \"token_type_ids\": \"(1,256)\"}"
             - "--log_level=DEBUG"
             - "--file_system_poll_wait_seconds=0"
             - "--plugin_config={\"PERFORMANCE_HINT\":\"LATENCY\"}"

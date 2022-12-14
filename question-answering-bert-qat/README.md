@@ -118,53 +118,7 @@ git clone  https://github.com/intel/nlp-training-and-inference-openvino.git
 
 cd nlp-training-and-inference-openvino/question-answering-bert-qat
 ```
-## Docker images 
-Build docker images to store in local image registry or pull image from Azure Marketplace. Please follow either Option i or Option ii 
-
-   - Option i. Steps to build images locally.
-
-      Start a local registry (you can use any string for `<registry_name>` e.g. qat_docker_registry)
-       
-       ```
-       docker run -d -p 5000:5000 --restart=always --name <registry_name>  registry:2
-       ```
-
-      Build docker image. Please edit the `docker-compose.yaml` file for `<registry>` tag with the local or private registry address. If using local registry, edit it to "localhost:5000"
-         
-      ```
-      cd dockerfiles
-      docker compose build
-      ```
-	  
-      Push the image to the local image registry
-         
-      ```
-      docker compose push openvino_optimum  
-      cd ..  
-      ```
-
-   - Option ii. Images to be pulled from Azure Marketplace
-       
-        Subscribe to the images mentioned below  
-        To be updated with screenshots once we know the name and place of the images  
-        Subscribed images from Azure Marketplace will get stored onto your private registry
-        
-        Create a kubectl secret for the private registry where the images are stored onto.
-
-        ```
-        kubectl create secret docker-registry <secret_name>
-            --docker-server <registry_name>.azurecr.io
-            --docker-email <your_email>
-            --docker-username=<service_principal_id>
-            --docker-password <your_password>
-        ```
-	
-        Edit the `helmchart/qat/values.yaml` with the secret name for the imagePullSecrets field with the <secret_name> as above.
-
-        Edit the `helmchart/qat/values.yaml` with the <registry_name> for repo_name field
-
 ## Modify helmchart/qat/values.yaml
-  * Replace <registry_name> under 'image:' with the user's private registry path or with the 'localhost:5000' for the local registry name.  
   * Replace <current_working_gitfolder> under 'mountpath:' with the current working repo directory. 
 ### **Note:**  
   Relative paths do not work with Helm.
@@ -238,12 +192,11 @@ Build docker images to store in local image registry or pull image from Azure Ma
   ```
   kubectl logs <pod_name>
   ```
-  2. The client can send in grpc request to server through Hugging Face API user application using the openvino_optimum image .
+  2. The client can send in grpc request to server.
    For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html) Find the ip address of the system where the OpenVINO™ Model Server has been deployed.
-  3. Change the 'registry' tag  & 'hostname' in the commnad below before running
+  3. Change the  'hostname' in the commnad below before running
  
  'hostname' : hostname of the node where the OpenVINO™ Model Server has been deployed.  
- 'registry' : It should be local or private registry address. If using local registry, edit it to "localhost:5000".
  ```
    kubectl get nodes  
      
@@ -256,7 +209,7 @@ Build docker images to store in local image registry or pull image from Azure Ma
 
 ```
    cd <gitrepofolder>/openvino_optimum_inference
-   docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=<hostname>:9000/models/bert --env MODEL_TYPE=ov  --env ADAPTER=ovms --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd):/home/inference/ <registry>/openvino_optimum -c "/home/inference/run_openvino_optimum_inference.sh"
+    docker run -it --entrypoint /bin/bash -v "$(pwd)":/home/inference -v "$(pwd)"/../quantization_aware_training/models/bert_int8/vocab.txt:/home/inference/vocab.txt --env VOCAB_FILE=/home/inference/vocab.txt --env  INPUT="https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" --env MODEL_PATH=<hostname>:9000/models/bert openvino/ubuntu20_dev:2022.2.0  -c /home/inference/run_ov_client.sh
 ```
 
   ### Usecase 3:
@@ -395,8 +348,8 @@ This is an optional step. Use Azure Storage for multi node kubernetes setup if y
   * Once the training is completed, you can view the Azure Portal and check in your fileshare that the model has been generated.
 
 ## References
-* [OpenVINO™ Integration with Hugging Face Optimum](https://github.com/openvinotoolkit/openvino_contrib/tree/master/modules/optimum)
-* [NNCF](https://github.com/openvinotoolkit/nncf)
+* [OpenVINO™ Integration with Hugging Face Optimum](https://github.com/huggingface/optimum-intel/tree/v1.5.2)
+* [NNCF](https://github.com/AlexKoff88/nncf_pytorch/tree/ak/qdq_per_channel)
 * [Huggingface Transformers training pipelines](https://github.com/huggingface/transformers/tree/main/examples/pytorch)
 * [OpenVINO™ Execution Provider](https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html)
 

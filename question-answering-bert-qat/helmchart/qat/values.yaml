@@ -66,7 +66,7 @@ mountpath:
   trainingvolume: <current_git_repo_folder>/question-answering-bert-qat/quantization_aware_training
   inferencevolume: <current_git_repo_folder>/question-answering-bert-qat/openvino_optimum_inference
   onnxinferencevolume: <current_git_repo_folder>/question-answering-bert-qat/onnxovep_optimum_inference
-  ovmsmodel: <current_git_repo_folder>/question-answering-bert-qat/quantization_aware_training/model/bert_int8
+  ovmsmodel: <current_git_repo_folder>/question-answering-bert-qat/quantization_aware_training/models/bert_int8
 nodeselector:
   trainingnode: <training_node>
   inferencenode: <inference_node>
@@ -90,11 +90,11 @@ inferenceenv:
   MODEL_TYPE: ov
   ADAPTER: openvino
   MODEL_NAME: bert-large-uncased-whole-word-masking-finetuned-squad
-  MODEL_PATH: /home/training/model/bert_int8
+  MODEL_PATH: /home/training/models/bert_int8
 onnxinferenceenv:
   INFERENCE_SCRIPT: /home/inference/bert_inference_optimum_ort_ovep.py
   NITER: 10
-  ONNX_MODEL_PATH: /home/training/model/bert_int8
+  ONNX_MODEL_PATH: /home/training/models/bert_int8
   PROVIDER: "OpenVINOExecutionProvider"
 
 

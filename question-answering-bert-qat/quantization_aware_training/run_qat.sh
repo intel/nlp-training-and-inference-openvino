@@ -31,7 +31,7 @@ ENTRYPOINT_ARGS+="${MAX_EVAL_SAMPLES:+ --max_eval_samples $MAX_EVAL_SAMPLES}"
 ENTRYPOINT_ARGS+=" --per_device_train_batch_size ${PER_DEVICE_TRAIN_BATCH_SIZE:- 3}"
 ENTRYPOINT_ARGS+=" --learning_rate ${LEARNING_RATE:- 3e-5}"
 ENTRYPOINT_ARGS+=" --num_train_epochs ${NUM_TRAIN_EPOCHS:- 2}"
-ENTRYPOINT_ARGS+=" --output_dir ${OUTPUT_DIR:- /home/training/output/bert_finetuned_model}"
+ENTRYPOINT_ARGS+=" --output_dir ${OUTPUT_DIR:- /home/training/models/bert_int8}"
 ENTRYPOINT_ARGS+=" --overwrite_output_dir ${OVERWRITE_OUTPUT_DIR:- True}"
 ENTRYPOINT_ARGS+="${EXTRAS:+ $EXTRAS}"
 
