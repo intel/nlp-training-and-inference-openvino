@@ -194,7 +194,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
   ```
   2. The client can send in grpc request to server.
    For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html) Find the ip address of the system where the OpenVINO™ Model Server has been deployed.
-  3. Change the  'hostname' in the commnad below before running
+  3. Change the  'hostname' in the command below before running
  
  'hostname' : hostname of the node where the OpenVINO™ Model Server has been deployed.  
  ```
@@ -206,9 +206,10 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
      
    In this case, hostname should be srdev
 ```
-
+ #### Run Inference on OpenVINO™ Model Server
+Run Inference on ovms server using below command. It will download inference script from open_model_zoo and run inference on ovms server:
 ```
-   cd <gitrepofolder>/openvino_optimum_inference
+   cd <gitrepofolder>/openvino_inference
     docker run -it --entrypoint /bin/bash -v "$(pwd)":/home/inference -v "$(pwd)"/../quantization_aware_training/models/bert_int8/vocab.txt:/home/inference/vocab.txt --env VOCAB_FILE=/home/inference/vocab.txt --env  INPUT="https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" --env MODEL_PATH=<hostname>:9000/models/bert openvino/ubuntu20_dev:2022.2.0  -c /home/inference/run_ov_client.sh
 ```
 
