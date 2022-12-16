@@ -5,8 +5,8 @@ Running the finetuned model in [OpenVINO Model Server](https://github.com/openvi
 1) Create a folder structure as below
     | -bert
        | -1  
-2) keep your IR files in the bert/1/ directory  
-3)Start the ovms server by following command.(make sure to change the input shape as per the training)    
+2) keep your IR files in the bert/1/ directory and start the ovms server
+3)Start the ovms server using following command.(make sure to change the input shape as per the training)    
    `docker run  --rm -p 9000:9000 -v $PWD/bert:/bert openvino/model_server:latest --model_name bert --model_path /bert --port 9000 --shape "{\"input_ids\": \"(1,256)\", \"attention_mask\": \"(1,256)\", \"token_type_ids\": \"(1,256)\"}" --log_level DEBUG --file_system_poll_wait_seconds 0`
 
 

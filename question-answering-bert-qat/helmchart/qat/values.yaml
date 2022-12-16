@@ -88,7 +88,6 @@ trainingenv:
 inferenceenv:
   INFERENCE_SCRIPT: /home/inference/inference_scripts/bert_qa.py
   MODEL_TYPE: ov
-  ADAPTER: openvino
   MODEL_NAME: bert-large-uncased-whole-word-masking-finetuned-squad
   MODEL_PATH: /home/training/models/bert_int8
 onnxinferenceenv:
