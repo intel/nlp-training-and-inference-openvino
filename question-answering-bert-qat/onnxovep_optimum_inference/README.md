@@ -19,19 +19,18 @@ Run the command below in the root of the application.
    cd onnxovep_optimum_inference
 ```
 
-### Docker run command to run INT8 ONNX file on OpenVINOExecutionProvider (Optimum ORT Script):  
+### Docker run command to run INT8 ONNX file on OpenVINOExecutionProvider using HuggingFaceAPI(Optimum ORT Script):  
 
 `docker run -it --entrypoint /bin/bash --env PROVIDER=OpenVINOExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_onnx_inference.sh"`
 
 
-### Docker run command to run INT8 ONNX file(generated after finetuning on the train container) on CPU Execution Provider(Optimum ORT Script):  
-
+### Docker run command to run INT8 ONNX file(generated after finetuning on the train container) on CPU Execution Provider using HuggingFaceAPI(Optimum ORT Script):  
 `docker run -it --entrypoint /bin/bash --env PROVIDER=CPUExecutionProvider --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models -v $(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models -v $(pwd):/home/inference --env INFERENCE_SCRIPT=/home/inference/bert_inference_optimum_ort_ovep.py openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_onnx_inference.sh"`
 
-## Docker run command to run INT8 ONNX file on the CPU with OpenVINO™ Runtime:  
+### Docker run command to run INT8 ONNX file on the CPU with OpenVINO™ Runtime using ONNXRuntime API:  
 `docker run -it --entrypoint /bin/bash --rm --device-cgroup-rule='c 189:* rmw' -v /dev/bus/usb:/dev/bus/usb -v $(pwd):/home/inference -v $(pwd)/../quantization_aware_training/models/bert_int8/:/home/inference/models --user 1000:1000 --env INFERENCE_SCRIPT=/home/inference/bert_inference_onnxruntime.py --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models/model.onnx --env DEVICE=CPU_FP32 --env MODEL_TYPE=INT8 --env MAX_SEQ_LENGTH=256 openvino/onnxruntime_ep_ubuntu18:2022.1.0 -c "/home/inference/run_inference.sh"`
 
-## Docker run command to run INT8 ONNX file(generated after finetuning on the train container) on default CPU:  
+### Docker run command to run INT8 ONNX file(generated after finetuning on the train container) on default CPU using ONNXRuntime API:  
 
 `docker run -it --entrypoint /bin/bash --rm --device-cgroup-rule='c 189:* rmw' -v /dev/bus/usb:/dev/bus/usb -v $(pwd):/home/inference -v $(pwd)/../quantization_aware_training/models/bert_int8/:/home/inference/models --user 1000:1000 --env INFERENCE_SCRIPT=/home/inference/bert_inference_onnxruntime.py --env NITER=10 --env ONNX_MODEL_PATH=/home/inference/models/model.onnx --env DEVICE=cpu --env MODEL_TYPE=INT8 --env MAX_SEQ_LENGTH=256 openvino/onnxruntime_ep_ubuntu18:2022.1.0 -c "/home/inference/run_inference.sh"`  
 
