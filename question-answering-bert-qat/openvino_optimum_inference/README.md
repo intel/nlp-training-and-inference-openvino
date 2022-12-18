@@ -13,20 +13,18 @@ This document details instructions on how to run the inference container locally
 ```
 
 ## Docker Run Command
-1. OpenVINO™ adapter:    
-  
-   Replace `<openvino_model.xml_directory>` with respective path e.g., `/home/inference/models`  
+Replace `<openvino_model.xml_directory>` with respective path e.g., `/home/inference/models`  
     
    ```
    cd openvino_optimum_inference
     
-   docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=/home/inference/models --env MODEL_TYPE=ov --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models -v $(pwd):/home/inference openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_openvino_optimum_inference.sh"
+   docker run -it --entrypoint /bin/bash --env MODEL_NAME=bert-large-uncased-whole-word-masking-finetuned-squad --env MODEL_PATH=<openvino_model.xml_directory> --env MODEL_TYPE=ov --env ITERATIONS=100 --env INFERENCE_SCRIPT=/home/inference/inference_scripts/bert_qa.py -v  $(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models -v $(pwd):/home/inference openvino/ubuntu20_dev:2022.2.0 -c "/home/inference/run_openvino_optimum_inference.sh"
    ```
 ### **Notes**:  
 Please find the volume mount and environment variable details below:
 
 #### **Volume Mount Model Folder**
-`$(pwd)/models:/home/inference/models`  
+`$(pwd)/../quantization_aware_training/models/bert_int8:/home/inference/models`  
 It will mount the host system model folder to container model folder.
 
 #### **Volume mount Input Folder**
