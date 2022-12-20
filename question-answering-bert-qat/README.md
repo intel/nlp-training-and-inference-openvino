@@ -1,4 +1,4 @@
-# An End-to-End NLP workflow with Quantization Aware Training(QAT) using Neural Networks Compression Framework (NNCF), and Inference using OpenVINO™ & OpenVINO™ Execution Provider
+# An End-to-End NLP workflow with Quantization Aware Training(QAT) using Neural Networks Compression Framework (NNCF), and Inference using OpenVINO™ & OpenVINO™ Execution Provider through Optimum Library
 This document details instructions on how to run quantization aware training & inference pipeline with Helm and docker.
  *	Introduction
     *	[Description](#Description)
@@ -14,15 +14,15 @@ This document details instructions on how to run quantization aware training & i
     *	Options to execute the workflow
         *	Using Helm 
             *	[Steps to use the Helm chart](#helm-usage)
-            *	[Use Case 1: Quantization Aware Training with Inference using OpenVINO™ Integration with Optimum-Intel*](#usecase-1)
+            *	[Use Case 1: Quantization Aware Training with Inference using Optimum-Intel*](#usecase-1)
             *	[Use Case 2: Quantization Aware Training with Inference using OpenVINO™ Model Server](#usecase-2)
-            *	[Use Case 3: Quantization Aware Training with Inference using Optimum Onnxruntime OVEP](#usecase-3)
+            *	[Use Case 3: Quantization Aware Training with Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](#usecase-3)
             *	[Use Case 4: Only Inference](#usecase-4)
             *	[Clean up](#clean-up)
             * [Output](#output)
         *	Local Build instructions using Docker run
             *	[Quantization Aware Training](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/quantization_aware_training/README.md) 
-            *	[Inference using OpenVINO™ Integration with Optimum-Intel*](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
+            *	[Inference using Optimum-Intel*](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
             * [Inference using OpenVINO™ Model Server](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
             *	[Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxruntime_inference/README.md)
             *	[Clean up](https://docs.docker.com/engine/reference/commandline/rm/)
@@ -45,14 +45,14 @@ This workflow is stitched together and deployed through Helm by using microservi
 The workflow executes as follows
 1) The Pipeline triggers Quantization Aware Training of an NLP model from Hugging Face. The output of this container is the INT8 optimized model stored on a local/cloud storage.
 2) Once the model is generated, then inference applications can be deployed with one of the following APIs  
-    i) Inference using Hugging Face API with Optimum Onnxruntime OpenVINO™ Execution Provider 
-   ii) Inference using Hugging Face API  with Optimum-Intel
-  iii) Deploy the model using OpenVINO™ Model Server and send in grpc requests  
+   i) Inference using Hugging Face API  with Optimum-Intel
+  ii) Deploy the model using OpenVINO™ Model Server and send in grpc requests  
+ iii) Inference using Hugging Face API with Optimum Onnxruntime OpenVINO™ Execution Provider 
 
 ## Project Structure 
 ```
 ├──quantization_aware_training - Training related scripts
-├──openvino_optimum_inference - Hugging Face API inference + Optimum-Intel with Openvino
+├──openvino_optimum_inference - Hugging Face API inference with Optimum Intel
 ├──onnxovep_optimum_inference - Hugging Face API with Optimum Onnxruntime OpenVINO™ Execution Provider
 ├──openvino_inference - Inference using OpenVINO™ Model Server
 ├── helmchart
@@ -63,7 +63,7 @@ The workflow executes as follows
   ├── charts
   ├── templates
    ├──pre_install_job.yaml - Deploys Quantization Aware Training container
-   ├──deployment_optimum.yaml - Deploys Huggingface API inference container 
+   ├──deployment_optimum.yaml - Deploys Huggingface API inference container with Optimum Intel
  ├── chart.yaml
  ├── values.yaml
  └── README.md
@@ -189,15 +189,17 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    Follow same instructions as [Usecase1](#usecase-1)
   
   #### OpenVINO™ Model Server Inference output
-  1. OpenVINO™ Model Server deploys optimized model from training container.You can view the logs using 
+  1. OpenVINO™ Model Server deploys optimized model from training container.You can view the logs using. Now the pod is ready to accept client requests
   ```
   kubectl logs <pod_name>
   ```
-  2. The client can send in grpc request to server.
+  2. The client can send in grpc request to server
    For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html) Find the ip address of the system where the OpenVINO™ Model Server has been deployed.
-  3. Change the  'hostname' in the command below before running
+  3. Please run a sample OpenVINO client application as below. 
+  
+     Open a new terminal to run the client application. Change the  'hostname' in the command below before running
  
- 'hostname' : hostname of the node where the OpenVINO™ Model Server has been deployed.  
+   'hostname' : hostname of the node where the OpenVINO™ Model Server has been deployed.  
  ```
    kubectl get nodes  
      
@@ -206,13 +208,16 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    srdev   Ready    control-plane,master   16d   v1.24.6+k3s1   
      
    In this case, hostname should be srdev
-```
- #### Run Inference on OpenVINO™ Model Server
-Run Inference on ovms server using below command. It will download inference script from open_model_zoo and run inference on ovms server:
+ #### Run client application to send request to OpenVINO™ Model Server
+  This will download inference script from open_model_zoo and serve inference using ovms server.
+    
 ```
    cd <gitrepofolder>/openvino_inference
     docker run -it --entrypoint /bin/bash -v "$(pwd)":/home/inference -v "$(pwd)"/../quantization_aware_training/models/bert_int8/vocab.txt:/home/inference/vocab.txt --env VOCAB_FILE=/home/inference/vocab.txt --env  INPUT="https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" --env MODEL_PATH=<hostname>:9000/models/bert openvino/ubuntu20_dev:2022.2.0  -c /home/inference/run_ov_client.sh
 ```
+   
+   The client application will trigger a interactive terminal to ask questions based on the context for "https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" as this is given as input. Please input a question.
+   
 
   ### Usecase 3:
   QAT with Inference using Optimum Onnxruntime OpenVINO™ Execution Provider
@@ -282,7 +287,7 @@ Cleanup resources:
    ```	  
    helm uninstall qatchart
    ```
-### Steps to trigger just one inference application:
+### Steps to trigger just inference application:
 Before triggering the inference, make sure you have access to the model file and also edit the model path in the `qat/values.yaml` file
 
 Keep only one deployment-*.yaml file in the qat/templates folder to deploy just one inference application.
