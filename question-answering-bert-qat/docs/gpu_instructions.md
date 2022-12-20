@@ -15,7 +15,7 @@ One the GPU node, please run the below commands
 ```
      containers:
         - name: w4-training
-          image: "{{ .Values.image.registry }}/{{ .Values.image.trainingimage }}"
+          image: "{{.Values.image.baseimage}}"
           imagePullPolicy: "IfNotPresent"
           command: ["/bin/sh"]
           args: ["-c", "cd /home/training && ls -l && ./run_qat.sh"]
