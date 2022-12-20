@@ -142,7 +142,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
  
 ### Usecase 1:
 
-  QAT with Inference using OpenVINO™ Integration with Optimum-Intel.
+  QAT with Inference using Optimum Intel.
 
    Training pod is deployed through `pre_install_job.yaml`.
    Inference pod is deployed through `deployment_optimum.yaml`.
@@ -172,7 +172,8 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    
 #### Optimum-Intel Inference output
 
- 1. Output of the OpenVINO™ Integration with Optimum* inference pod will be stored in the openvino_optimum_inference/logs.txt file. 
+ 1. Input to the inference pod will be taken from openvino_optimum_inference/inputs folder 
+ 2. Output of the OpenVINO™ Integration with Optimum* inference pod will be stored in the openvino_optimum_inference/logs.txt file. 
 
  2. You can view the logs using 
     ```
@@ -232,9 +233,10 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    Follow same instructions as [Usecase1](#usecase-1)
    
 #### Optimum Onnxruntime Inference output
- 1. Output of the onnxruntime inference pod will be stored in the onnxruntime_inference/logs.txt file. 
+ 1. Input to the inference pod will be taken from openvino_optimum_inference/inputs folder
+ 2. Output of the onnxruntime inference pod will be stored in the onnxruntime_inference/logs.txt file. 
 
- 2. You can view the logs using 
+ 3. You can view the logs using 
     ```
     kubectl logs <pod_name>
     ```
