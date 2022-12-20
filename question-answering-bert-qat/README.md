@@ -206,7 +206,8 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    azureuser@SRDev:~/nlp-training-and-inference-openvino/question-answering-bert-qat/openvino_optimum_inference$ kubectl get nodes  
    NAME    STATUS   ROLES                  AGE   VERSION  
    srdev   Ready    control-plane,master   16d   v1.24.6+k3s1   
-     
+ ```
+ 
    In this case, hostname should be srdev
  #### Run client application to send request to OpenVINO™ Model Server
   This will download inference script from open_model_zoo and serve inference using ovms server.
