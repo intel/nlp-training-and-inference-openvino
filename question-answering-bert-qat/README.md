@@ -14,17 +14,17 @@ This document details instructions on how to run quantization aware training & i
     *	Options to execute the workflow
         *	Using Helm 
             *	[Steps to use the Helm chart](#helm-usage)
-            *	[Use Case 1: Quantization Aware Training with Inference using OpenVINO™ Integration with Optimum*](#usecase-1)
+            *	[Use Case 1: Quantization Aware Training with Inference using OpenVINO™ Integration with Optimum-Intel*](#usecase-1)
             *	[Use Case 2: Quantization Aware Training with Inference using OpenVINO™ Model Server](#usecase-2)
-            *	[Use Case 3: Quantization Aware Training with Inference using OpenVINO™ Execution Provider](#usecase-3)
+            *	[Use Case 3: Quantization Aware Training with Inference using Optimum Onnxruntime OVEP](#usecase-3)
             *	[Use Case 4: Only Inference](#usecase-4)
             *	[Clean up](#clean-up)
             * [Output](#output)
         *	Local Build instructions using Docker run
             *	[Quantization Aware Training](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/quantization_aware_training/README.md) 
-            *	[Inference using OpenVINO™ Integration with Optimum*](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
+            *	[Inference using OpenVINO™ Integration with Optimum-Intel*](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
             * [Inference using OpenVINO™ Model Server](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
-            *	[Inference using OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxruntime_inference/README.md)
+            *	[Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxruntime_inference/README.md)
             *	[Clean up](https://docs.docker.com/engine/reference/commandline/rm/)
     * Optional: 
         * [Set Up Azure Storage](#set-up-azure-storage)
@@ -45,18 +45,19 @@ This workflow is stitched together and deployed through Helm by using microservi
 The workflow executes as follows
 1) The Pipeline triggers Quantization Aware Training of an NLP model from Hugging Face. The output of this container is the INT8 optimized model stored on a local/cloud storage.
 2) Once the model is generated, then inference applications can be deployed with one of the following APIs  
-    i) Inference using ONNXRT API  
-   ii) Inference using Hugging Face API  
+    i) Inference using Hugging Face API with Optimum Onnxruntime OpenVINO™ Execution Provider 
+   ii) Inference using Hugging Face API  with Optimum-Intel
   iii) Deploy the model using OpenVINO™ Model Server and send in grpc requests  
 
 ## Project Structure 
 ```
 ├──quantization_aware_training - Training related scripts
-├──openvino_optimum_inference - Hugging Face API inference scripts with OpenVINO™ Runtime
-├──onnxovep_optimum_inference - ONNX Runtime API inference scripts with OpenVINO™ Runtime
+├──openvino_optimum_inference - Hugging Face API inference + Optimum-Intel with Openvino
+├──onnxovep_optimum_inference - Hugging Face API with Optimum Onnxruntime OpenVINO™ Execution Provider
+├──openvino_inference - Inference using OpenVINO™ Model Server
 ├── helmchart
  ├── deployment_yaml
-   ├──deployment_onnx.yaml - Deploys onnxruntime with OpenVINO™ container
+   ├──deployment_onnx.yaml - Deploys optimum onnxruntime inference container
    ├──deployment_ovms.yaml - Deploys optimized model through OpenVINO™ Model Server
  ├── qat
   ├── charts
@@ -141,7 +142,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
  
 ### Usecase 1:
 
-  QAT with Inference using OpenVINO™ Integration with Optimum.
+  QAT with Inference using OpenVINO™ Integration with Optimum-Intel.
 
    Training pod is deployed through `pre_install_job.yaml`.
    Inference pod is deployed through `deployment_optimum.yaml`.
@@ -169,7 +170,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
   
   Once the training is completed, inference pod gets deployed automatically. Inference pod uses OpenVINO™ Runtime as backend to Hugging Face APIs and takes in model generated from training pod as input.
    
-#### Optimum Inference output
+#### Optimum-Intel Inference output
 
  1. Output of the OpenVINO™ Integration with Optimum* inference pod will be stored in the openvino_optimum_inference/logs.txt file. 
 
@@ -214,7 +215,7 @@ Run Inference on ovms server using below command. It will download inference scr
 ```
 
   ### Usecase 3:
-  QAT with Inference using OpenVINO™ Execution Provider
+  QAT with Inference using Optimum Onnxruntime OpenVINO™ Execution Provider
   
    Training pod is deployed through `pre_install_job.yaml`.
    ONNX Runtime with OpenVINO™ Execution Provider pod is deployed through `deployment_onnx.yaml`. 
@@ -223,7 +224,7 @@ Run Inference on ovms server using below command. It will download inference scr
    
    Follow same instructions as [Usecase1](#usecase-1)
    
-#### Onnxruntime Inference output
+#### Optimum Onnxruntime Inference output
  1. Output of the onnxruntime inference pod will be stored in the onnxruntime_inference/logs.txt file. 
 
  2. You can view the logs using 
@@ -286,7 +287,7 @@ Before triggering the inference, make sure you have access to the model file and
 
 Keep only one deployment-*.yaml file in the qat/templates folder to deploy just one inference application.
 
-1) For Onnxruntime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model format acceptable is .onnx
+1) For Optimum Onnxruntime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model format acceptable is .onnx
 2) For Huggingface API  with OpenVINO™ runtime, use `deployment_optimum.yaml`. Model format acceptable is pytorch or IR.xml
 3) For OpenVINO™ Model Server, use `deployment-ovms.yaml`. Model format acceptabe is IR.xml
 
@@ -349,7 +350,7 @@ This is an optional step. Use Azure Storage for multi node kubernetes setup if y
   * Once the training is completed, you can view the Azure Portal and check in your fileshare that the model has been generated.
 
 ## References
-* [OpenVINO™ Integration with Hugging Face Optimum](https://github.com/huggingface/optimum-intel/tree/v1.5.2)
+* [OpenVINO™ Integration with Hugging Face Optimum-Intel](https://github.com/huggingface/optimum-intel/tree/v1.5.2)
 * [NNCF](https://github.com/AlexKoff88/nncf_pytorch/tree/ak/qdq_per_channel)
 * [Huggingface Transformers training pipelines](https://github.com/huggingface/transformers/tree/main/examples/pytorch)
 * [OpenVINO™ Execution Provider](https://onnxruntime.ai/docs/execution-providers/OpenVINO-ExecutionProvider.html)
