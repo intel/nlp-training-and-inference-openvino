@@ -193,8 +193,9 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
   ```
   kubectl logs <pod_name>
   ```
-  2. The client can send in grpc request to server
-   For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html) Find the ip address of the system where the OpenVINO™ Model Server has been deployed.
+  2. The client can send in grpc request to server.
+  
+   For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html).
   3. Please run a sample OpenVINO client application as below. 
   
      Open a new terminal to run the client application. Change the  'hostname' in the command below before running
@@ -221,7 +222,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    
 
   ### Usecase 3:
-  QAT with Inference using Optimum Onnxruntime OpenVINO™ Execution Provider
+  QAT with Inference using Optimum Onnxruntime with OpenVINO™ Execution Provider
   
    Training pod is deployed through `pre_install_job.yaml`.
    ONNX Runtime with OpenVINO™ Execution Provider pod is deployed through `deployment_onnx.yaml`. 
