@@ -26,7 +26,7 @@ docker run -it --entrypoint /bin/bash -v "$(pwd)":/home/inference -v "$(pwd)"/..
 The client application will trigger a interactive terminal to ask questions based on the context for "https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" as this is given as input. Please input a question.
 
 ### **Note**:
-Replace the IP with the IP of the ovms server container. (Use "docker inspect <ovms server container>" to get the IP address)  
+Replace the IP with the IP of the ovms server container. (Use 'docker inspect ovms_container_id' to get the IP address. Inorder to get ovms_container_id, please use `docker ps` command)   
 Vocab file is available in the model folder.  
 Replace the INPUT URL with any url of your choice to ask question related to it.
 

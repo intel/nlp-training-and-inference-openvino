@@ -23,8 +23,8 @@ This document details instructions on how to run quantization aware training & i
         *	Local Build instructions using Docker run
             *	[Quantization Aware Training](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/quantization_aware_training/README.md) 
             *	[Inference using Optimum-Intel*](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
-            * [Inference using OpenVINO™ Model Server](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
-            *	[Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxruntime_inference/README.md)
+            * [Inference using OpenVINO™ Model Server](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_inference/README.md)
+            *	[Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxovep_optimum_inference/README.md)
             *	[Clean up](https://docs.docker.com/engine/reference/commandline/rm/)
     * Optional: 
         * [Set Up Azure Storage](#set-up-azure-storage)
@@ -142,7 +142,12 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
  
 ### Usecase 1:
 
-  QAT with Inference using Optimum Intel.
+  QAT with Inference using Optimum Intel.  
+  We have options to run inference on two ways  
+  1. Using Input CSV file( Default behaviour)  
+  2. Using Arguments(Optional) - Question and Context Argument. We need to edit `deployment_optimum.yaml` to run inference based on question and context argument. We need to pass question and context as below in `deployment_optimum.yaml`:  
+  `args: ["-c", "chown openvino -R /home/inference && cd /home/inference && ./run_onnx_inference.sh 'Who is sachin' 'Sachin is a cricket player'"]`
+
 
    Training pod is deployed through `pre_install_job.yaml`.
    Inference pod is deployed through `deployment_optimum.yaml`.
@@ -172,7 +177,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    
 #### Optimum-Intel Inference output
 
- 1. Input to the inference pod will be taken from openvino_optimum_inference/inputs folder 
+ 1. Input to the inference pod will be taken from openvino_optimum_inference/data folder 
  2. Output of the OpenVINO™ Integration with Optimum* inference pod will be stored in the openvino_optimum_inference/logs.txt file. 
 
  2. You can view the logs using 
@@ -233,8 +238,8 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
    Follow same instructions as [Usecase1](#usecase-1)
    
 #### Optimum Onnxruntime Inference output
- 1. Input to the inference pod will be taken from openvino_optimum_inference/inputs folder
- 2. Output of the onnxruntime inference pod will be stored in the onnxruntime_inference/logs.txt file. 
+ 1. Input to the inference pod will be taken from onnxovep_optimum_inference/data folder
+ 2. Output of the onnxruntime inference pod will be stored in the onnxovep_optimum_inference/logs.txt file. 
 
  3. You can view the logs using 
     ```
@@ -351,6 +356,10 @@ This is an optional step. Use Azure Storage for multi node kubernetes setup if y
   * Mount the share
   ```
      sudo mount -t cifs //$STORAGEACCT.file.core.windows.net/myshare /mnt/MyAzureFileShare -o vers=3.0,username=$STORAGEACCT,password=$STORAGEKEY,serverino
+  ```
+    * Note
+  ```
+     We can also create mount point and mount the share by proceeding following steps - Go to created File share in Azure Portal and click connect. It will provide steps to connect the file share from a Linux,Windows and Macos.
   ```
   ### Usage of Azure Storage in helm
   * Clone the git_repo in /mnt/MyAzureFileShare and make it as your working directory
