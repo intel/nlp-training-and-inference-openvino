@@ -45,9 +45,9 @@ This workflow is stitched together and deployed through Helm by using microservi
 The workflow executes as follows
 1) The Pipeline triggers Quantization Aware Training of an NLP model from Hugging Face. The output of this container is the INT8 optimized model stored on a local/cloud storage.
 2) Once the model is generated, then inference applications can be deployed with one of the following APIs  
-   i) Inference using ONNX Runtime APIs with OpenVINO™ Execution Provider   
+   i) Inference using Hugging Face APIs + Optimum-Intel with OpenVINO™   
   ii) Deploy the model using OpenVINO™ Model Server and send in grpc requests  
- iii) Inference using Optimum ONNX Runtime with OpenVINO™ Execution Provider  
+ iii) Inference using Hugging Face APIs + Optimum ONNX Runtime with OpenVINO™ Execution Provider  
 
 ## Project Structure 
 ```
