@@ -40,7 +40,7 @@ The main objective of this automated AI/ML pipeline is to demonstrate quantizati
 
 ![AI workflow](docs/usecase_flow.png)
 
-This workflow is stitched together and deployed through Helm by using microservices/docker images which can be built or taken from Azure Marketplace.
+This workflow is stitched together and deployed through Helm by using microservices/docker images which can be built.
 
 The workflow executes as follows
 1) The Pipeline triggers Quantization Aware Training of an NLP model from Hugging Face. The output of this container is the INT8 optimized model stored on a local/cloud storage.
