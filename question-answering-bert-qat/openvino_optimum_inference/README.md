@@ -13,7 +13,7 @@ This document details instructions on how to run the inference container locally
 ```
 
 ## Docker Run Command
-Replace directory containing xmls `<openvino_model.xml_directory>` with respective path e.g., `/home/inference/models`  
+Update the  `<openvino_model.xml_directory>`  with respective path e.g., `/home/inference/models`  directory containing xmls
     
    ```
    cd openvino_optimum_inference
