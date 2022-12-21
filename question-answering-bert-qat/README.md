@@ -33,7 +33,7 @@ This document details instructions on how to run quantization aware training & i
     *	[Troubleshooting](#Troubleshooting)
     
 ## Description
-The main objective of this automated AI/ML pipeline is to demonstrate quantization aware training using Neural Networks Compression Framework [NNCF] through OpenVINO™ Integration with Optimum* and deployment of inference application through various APIs i.e., Hugging Face API, Onnxruntime API and OpenVINO™ Model Server
+The main objective of this automated AI/ML pipeline is to demonstrate quantization aware training using Neural Networks Compression Framework(NNCF) through Optimum-Intel* and deployment of inference application through various APIs i.e., Hugging Face API, ONNX Runtime API and OpenVINO™ Model Server
 
 ## Block Diagram
   
