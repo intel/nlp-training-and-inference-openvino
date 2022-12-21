@@ -438,5 +438,12 @@ Uninstalling k3s: (If required)
 ```
 [Read more here](https://rancher.com/docs/k3s/latest/en/installation/uninstall/#:~:text=If%20you%20installed%20K3s%20using,installation%20script%20with%20different%20flags) <br />
 
+### Cleaning up resources
+
+Delete any resouce after the execution
+```
+	kubectl delete pod <pod_name>
+	kubectl delete job <job_name>
+```
 	
 
