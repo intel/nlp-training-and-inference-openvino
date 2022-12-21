@@ -7,6 +7,6 @@ This repository contains NLP use cases build using Intel's different AI componen
   
 | Use Case Name   |      Description      |  Folder Name |
 |:--------|:-------------|:-----|
-| Quantization Aware Training and Inference using OpenVINO™ toolkit |   An End-to-End NLP workflow with Quantization Aware Training using Optimum-intel[NNCF]*, and Inference using Optimum-ORT*, OpenVINO™ Model Server & ONNX Runtime with OpenVINO™ Execution Provider | [question-answering-bert-qat](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat) |
+| Quantization Aware Training and Inference using OpenVINO™ toolkit |   An End-to-End NLP workflow with Quantization Aware Training using Optimum-Intel\*, and Inference using Optimum-ONNX Runtime\*, OpenVINO™ Model Server & ONNX Runtime with OpenVINO™ Execution Provider | [question-answering-bert-qat](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat) |
 
 
