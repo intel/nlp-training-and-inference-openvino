@@ -77,10 +77,12 @@ The workflow executes as follows
 -   One of the following System:
 
     -   Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz (16 vCPUs)
+       
+       -   At least 64 GB RAM.
 .
     -   Intel(R) Xeon(R) with NVIDIA* GPU.
-
--   At least 64 GB RAM.
+      
+       -   At least 112 GB RAM.  
 
 -   At least 256 GB hard drive.
 
@@ -110,6 +112,7 @@ The workflow executes as follows
 - We are currently using  `bert-large-uncased-whole-word-masking-finetuned-squad`
  model for `Question Answering` usecase through quantization aware training and inference . We do have training and inference scripts in the respective folders.
 
+- For training on GPU, please refer instructions on [Enable NVIDIA GPU for training](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/docs/gpu_instructions.md)
 ## Install and Run the workflow:
 ## Download source code
 
