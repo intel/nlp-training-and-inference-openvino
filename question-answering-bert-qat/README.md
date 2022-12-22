@@ -15,7 +15,7 @@ This document details instructions on how to run quantization aware training & i
             *	[Steps to use the Helm chart](#helm-usage)
             *	[Use Case 1: Quantization Aware Training with Inference using Optimum-Intel*](#usecase-1-qat-with-inference-using-optimum-intel)
             *	[Use Case 2: Quantization Aware Training with Inference using OpenVINO™ Model Server](#usecase-2-qat-with-inference-using-OpenVINO™-model-server)
-            *	[Use Case 3: Quantization Aware Training with Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](#usecase-3-qat-with-inference-using-optimum-onnx-runtime-with-openvino-execution-provider)
+            *	[Use Case 3: Quantization Aware Training with Inference using Optimum ONNX Runtime OpenVINO™ Execution Provider](#usecase-3-qat-with-inference-using-optimum-onnx-runtime-with-openvino-execution-provider)
             *	[Use Case 4: Only Inference](#usecase-4-inference-only)
             *	[Clean up](#Cleaning-up-resources)
             * [Output](#evaluate-use-case-output)
@@ -23,7 +23,7 @@ This document details instructions on how to run quantization aware training & i
             *	[Quantization Aware Training](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/quantization_aware_training/README.md) 
             *	[Inference using Optimum-Intel*](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_optimum_inference/README.md)
             * [Inference using OpenVINO™ Model Server](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/openvino_inference/README.md)
-            *	[Inference using Optimum Onnxruntime OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxovep_optimum_inference/README.md)
+            *	[Inference using Optimum ONNX Runtime OpenVINO™ Execution Provider](https://github.com/intel/nlp-training-and-inference-openvino/tree/main/question-answering-bert-qat/onnxovep_optimum_inference/README.md)
             *	[Clean up](https://docs.docker.com/engine/reference/commandline/rm/)
     * Optional: 
         * [Set Up Azure Storage](#set-up-azure-storage)
@@ -52,11 +52,11 @@ The workflow executes as follows
 ```
 ├──quantization_aware_training - Training related scripts
 ├──openvino_optimum_inference - Hugging Face API inference with Optimum Intel
-├──onnxovep_optimum_inference - Hugging Face API with Optimum Onnxruntime OpenVINO™ Execution Provider
+├──onnxovep_optimum_inference - Hugging Face API with Optimum ONNX Runtime OpenVINO™ Execution Provider
 ├──openvino_inference - Inference using OpenVINO™ Model Server
 ├── helmchart
  ├── deployment_yaml
-   ├──deployment_onnx.yaml - Deploys optimum onnxruntime inference container
+   ├──deployment_onnx.yaml - Deploys Optimum ONNX Runtime inference container
    ├──deployment_ovms.yaml - Deploys optimized model through OpenVINO™ Model Server
  ├── qat
   ├── charts
@@ -239,7 +239,7 @@ just one inference application.
 *  For OpenVINO™ model server, use `deployment-ovms.yaml`. Model format
    acceptable is IR.xml
 
-*  For Optimum Onnxruntime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model
+*  For Optimum ONNX Runtime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model
    format acceptable is .onnx
 ```
 cd helmchart
@@ -293,7 +293,7 @@ Before triggering the inference, make sure you have access to the model file and
 
 Keep only one deployment-*.yaml file in the qat/templates folder to deploy just one inference application.
 
-1) For Optimum Onnxruntime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model format acceptable is .onnx
+1) For Optimum ONNX Runtime with OpenVINO-EP, use `deployment_onnx.yaml` file. Model format acceptable is .onnx
 2) For Huggingface API  with OpenVINO™ runtime, use `deployment_optimum.yaml`. Model format acceptable is pytorch or IR.xml
 3) For OpenVINO™ Model Server, use `deployment-ovms.yaml`. Model format acceptabe is IR.xml
 
