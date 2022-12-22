@@ -128,7 +128,7 @@ cd nlp-training-and-inference-openvino/question-answering-bert-qat
   * Edit the `helmchart/qat/values.yaml` file for the <train_node> and <inference_node> values under 'nodeselector' key  
     Pick any of the available nodes for training and inference with the nodename of this command.
     ``` 
-      kubectl get nodes --show-labels
+    kubectl get nodes --show-labels
     ```
     nodeselector:  
       trainingnode: <train_node>  
@@ -154,8 +154,8 @@ This section contains step-by-step details to install specific Helm charts with 
 
   
    ```
-    cd helmchart
-    helm install qatchart qat  --timeout <time>
+   cd helmchart
+   helm install qatchart qat  --timeout <time>
    ```
   The `<time>` value has the format ``nnns``, where **s** indicates seconds. For the above hardware configuration and with ``MAX_TRAIN_SAMPLES=50``, we recommend you set the `<time>` value as ``480s``. You can increase the value for reduced hardware configuration. Refer to [Troubleshooting](#Troubleshooting) in case of timeout errors.
 
@@ -188,7 +188,7 @@ This section contains step-by-step details to install specific Helm charts with 
   #### OpenVINO™ Model Server Inference output
   1. OpenVINO™ Model Server deploys optimized model from training container. View the logs using the command:
     ```
-     kubectl logs <pod_name>
+    kubectl logs <pod_name>
     ```
    Now the pod is ready to accept client requests
   
@@ -199,11 +199,11 @@ This section contains step-by-step details to install specific Helm charts with 
  
    'hostname' : hostname of the node where the OpenVINO™ Model Server has been deployed.  
  ```
-   kubectl get nodes  
+ kubectl get nodes  
      
-   azureuser@SRDev:~/nlp-training-and-inference-openvino/question-answering-bert-qat/openvino_optimum_inference$ kubectl get nodes  
-   NAME    STATUS   ROLES                  AGE   VERSION  
-   srdev   Ready    control-plane,master   16d   v1.24.6+k3s1   
+ azureuser@SRDev:~/nlp-training-and-inference-openvino/question-answering-bert-qat/openvino_optimum_inference$ kubectl get nodes  
+ NAME    STATUS   ROLES                  AGE   VERSION  
+ srdev   Ready    control-plane,master   16d   v1.24.6+k3s1   
  ```
  
    In this case, hostname should be srdev
@@ -211,8 +211,8 @@ This section contains step-by-step details to install specific Helm charts with 
   This will download inference script from open_model_zoo and serve inference using ovms server.
     
 ```
-   cd <gitrepofolder>/openvino_inference
-    docker run -it --entrypoint /bin/bash -v "$(pwd)":/home/inference -v "$(pwd)"/../quantization_aware_training/models/bert_int8/vocab.txt:/home/inference/vocab.txt --env VOCAB_FILE=/home/inference/vocab.txt --env  INPUT="https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" --env MODEL_PATH=<hostname>:9000/models/bert openvino/ubuntu20_dev:2022.2.0  -c /home/inference/run_ov_client.sh
+cd <gitrepofolder>/openvino_inference
+docker run -it --entrypoint /bin/bash -v "$(pwd)":/home/inference -v "$(pwd)"/../quantization_aware_training/models/bert_int8/vocab.txt:/home/inference/vocab.txt --env VOCAB_FILE=/home/inference/vocab.txt --env  INPUT="https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" --env MODEL_PATH=<hostname>:9000/models/bert openvino/ubuntu20_dev:2022.2.0  -c /home/inference/run_ov_client.sh
 ```
    
    The client application will trigger a interactive terminal to ask questions based on the context for "https://en.wikipedia.org/wiki/Bert_(Sesame_Street)" as this is given as input. Please input a question.
@@ -317,40 +317,40 @@ This is an optional step. Use Azure Storage for multi node kubernetes setup if y
   * Open Azure CLI terminal on Azure Portal 
   * Create a resource group
   ```
-    az group create --name myResourceGroup --location eastus
+  az group create --name myResourceGroup --location eastus
   ```
   * Create Storage Account
   ```
-    STORAGEACCT=$(az storage account create \
-    --resource-group "myResourceGroup" \
-    --name "mystorageacct$RANDOM" \
-    --location eastus \
-    --sku Standard_LRS \
-    --query "name" | tr -d '"')
+  STORAGEACCT=$(az storage account create \
+  --resource-group "myResourceGroup" \
+  --name "mystorageacct$RANDOM" \
+  --location eastus \
+  --sku Standard_LRS \
+  --query "name" | tr -d '"')
   ```
   * Create Storage Key
   ```
-    STORAGEKEY=$(az storage account keys list \
-    --resource-group "myResourceGroup" \
-    --account-name $STORAGEACCT \
-    --query "[0].value" | tr -d '"')
+  STORAGEKEY=$(az storage account keys list \
+  --resource-group "myResourceGroup" \
+  --account-name $STORAGEACCT \
+  --query "[0].value" | tr -d '"')
   ```
   * Create a file share
   ```
-    az storage share create --name myshare \
-    --quota 10 \
-    --account-name $STORAGEACCT \
-    --account-key $STORAGEKEY
+  az storage share create --name myshare \
+  --quota 10 \
+  --account-name $STORAGEACCT \
+  --account-key $STORAGEKEY
   ```
   * Create a mount point
   ```
-     mkdir -p /mnt/MyAzureFileShare
+  mkdir -p /mnt/MyAzureFileShare
   ```
   * Mount the share
   ```
-     sudo mount -t cifs //$STORAGEACCT.file.core.windows.net/myshare /mnt/MyAzureFileShare -o vers=3.0,username=$STORAGEACCT,password=$STORAGEKEY,serverino
+  sudo mount -t cifs //$STORAGEACCT.file.core.windows.net/myshare /mnt/MyAzureFileShare -o vers=3.0,username=$STORAGEACCT,password=$STORAGEKEY,serverino
   ```
-    * Note
+  * Note
   ```
      We can also create mount point and mount the share by proceeding following steps - Go to created File share in Azure Portal and click connect. It will provide steps to connect the file share from a Linux,Windows and Macos.
   ```
