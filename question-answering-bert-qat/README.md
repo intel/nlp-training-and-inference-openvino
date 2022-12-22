@@ -192,9 +192,7 @@ This section contains step-by-step details to install specific Helm charts with 
     ```
    Now the pod is ready to accept client requests
   
-  2. The client can send in grpc request to server using OpenVINO APIs
-  
-   For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html).
+  2. The client can send in grpc request to server using OpenVINO APIs. For more details on the OpenVINO™ Model Server Adapter API [here](https://docs.openvino.ai/latest/omz_model_api_ovms_adapter.html).
   3. Run a sample OpenVINO client application as below. 
   
      Open a new terminal to run the client application. Change the  'hostname' in the command below before running
