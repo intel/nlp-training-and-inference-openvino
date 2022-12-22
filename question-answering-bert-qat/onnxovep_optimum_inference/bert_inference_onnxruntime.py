@@ -20,6 +20,10 @@ import onnxruntime
 import transformers
 import torch
 import time
+import sys
+from argparse import ArgumentParser
+import pathlib
+import pandas as pd
 
 # The pre process function take a question and a context, and generates the tensor inputs to the model:
 # - input_ids: the words in the question encoded as integers
@@ -54,18 +58,43 @@ def postprocess(tokens, start, end):
         results['error'] = "I am unable to find the answer to this question. Can you please ask another question?"
     return results
 
+
+def build_argparser():
+    parser = ArgumentParser(add_help=False)
+    args = parser.add_argument_group('Options')
+    args.add_argument("-mn", "--modelname", default='bert-large-uncased-whole-word-masking-finetuned-squad',
+                      help="Name of the model")
+    args.add_argument("-mp", "--modelpath",
+                      help="Path to the onnx model")
+    args.add_argument("-mt", "--modeltype", help="INT8 or FP32")
+    args.add_argument("-d", "--device", help="CPU or CPU_FP32")
+    args.add_argument("-ni", "--niter", type=int,
+                      default=10, help="Number of Iterations")
+    args.add_argument("-msl", "--max_seq_length", type=int,
+                      default=256, help="Max Sequence Length")
+    args.add_argument("-ip", "--inputpath",
+                      default='/home/inference/data/input.csv', help="Path to the input file")
+    args.add_argument("-op", "--outputpath",
+                      default='/home/inference/data/output.csv', help="Path to the output file")
+    args.add_argument("-q", "--question",type=str,
+                      help="Question")
+    args.add_argument("-c", "--context",type=str,
+                      help="Context")
+
+    return parser
+
 # Perform the one-off intialisation for the prediction. The init code is run once when the endpoint is setup.
 
 
 def init():
-    global tokenizer, onnx_session, torch_model
-
-    model_name = "bert-large-uncased-whole-word-masking-finetuned-squad"
+    global tokenizer, onnx_session, torch_model, input_args
+    input_args = build_argparser().parse_args()
+    model_name = input_args.modelname
     # Create the tokenizer
     tokenizer = transformers.BertTokenizer.from_pretrained(model_name)
 
-    model_path = os.getenv('ONNX_MODEL_PATH')
-    device = os.getenv('DEVICE')
+    model_path = input_args.modelpath
+    device = input_args.device
     if model_path:
         # Create an ONNX Runtime session to run the ONNX model
         if device == 'cpu':
@@ -91,14 +120,12 @@ def init():
 
 
 # Run the PyTorch model, for functional and performance comparison
-def run_pytorch(raw_data):
-    inputs = json.loads(raw_data)
-
-    logging.info("Question:", inputs["question"])
-    logging.info("Context: ", inputs["context"])
-    max_seq_length = int(os.getenv('MAX_SEQ_LENGTH'))
+def run_pytorch(question,context):
+    logging.info("Question:", question)
+    logging.info("Context: ", context)
+    max_seq_length = int(input_args.max_seq_length)
     input_ids, input_mask, segment_ids, tokens = preprocess(
-        inputs["question"], inputs["context"])
+        question, context)
     if len(input_ids) < max_seq_length:
         input_ids.extend([0]*(max_seq_length-len(input_ids)))
     else:
@@ -112,7 +139,7 @@ def run_pytorch(raw_data):
     else:
         segment_ids = segment_ids[:max_seq_length]
 
-    n_iter = int(os.getenv('NITER'))
+    n_iter = int(input_args.niter)
     # warmup step
     torch_model(torch.tensor([input_ids]),
           token_type_ids=torch.tensor([segment_ids]))
@@ -127,19 +154,16 @@ def run_pytorch(raw_data):
     return postprocess(tokens, model_outputs.start_logits.detach().numpy(), model_outputs.end_logits.detach().numpy())
 
 # Run the ONNX model with ONNX Runtime
-def run_onnx(raw_data):
-
-    inputs = json.loads(raw_data)
-
-    logging.info("Question:", inputs["question"])
-    logging.info("Context: ", inputs["context"])
+def run_onnx(question,context):
+    logging.info("Question:", question)
+    logging.info("Context: ", context)
 
     # Preprocess the question and context into tokenized ids
     input_ids, input_mask, segment_ids, tokens = preprocess(
-        inputs["question"], inputs["context"])
+        question, context)
 
     # Format the inputs for ONNX Runtime
-    max_seq_length = int(os.getenv('MAX_SEQ_LENGTH'))
+    max_seq_length = int(input_args.max_seq_length)
     if len(input_ids) < max_seq_length:
         input_ids.extend([0]*(max_seq_length-len(input_ids)))
     else:
@@ -153,9 +177,9 @@ def run_onnx(raw_data):
     else:
         segment_ids = segment_ids[:max_seq_length]
 
-    n_iter = int(os.getenv('NITER'))
+    n_iter = int(input_args.niter)
 
-    if os.getenv('MODEL_TYPE') == 'FP32':
+    if input_args.modeltype == 'FP32':
         model_inputs = {
             'input_ids':   [input_ids],
             'input_mask':  [input_mask],
@@ -170,7 +194,7 @@ def run_onnx(raw_data):
             outputs = onnx_session.run(['start_logits', 'end_logits'], model_inputs)
         average_time = (((time.time() - start)/n_iter) * 1e3)
 
-    elif os.getenv('MODEL_TYPE') == 'INT8':
+    elif input_args.modeltype == 'INT8':
         # INT8 onnx file inputs
         model_inputs = {
             'input_ids':   [input_ids],
@@ -179,14 +203,14 @@ def run_onnx(raw_data):
         }
 
         # warm up step
-        onnx_session.run(['output.0', 'output.1'], model_inputs)
+        onnx_session.run(['start_logits', 'end_logits'], model_inputs)
 
         start = time.time()
         for _ in range(n_iter):
-            outputs = onnx_session.run(['output.0', 'output.1'], model_inputs)
+            outputs = onnx_session.run(['start_logits', 'end_logits'], model_inputs)
         average_time = (((time.time() - start)/n_iter) * 1e3)
 
-    print(f"{os.getenv('MODEL_TYPE')} Average inference time using openvino-onnxruntime with {os.getenv('DEVICE')} Execution provider: {average_time}")
+    print(f"{input_args.modeltype} Average inference time using openvino-onnxruntime with {input_args.device} Execution provider: {average_time}")
     logging.info("Post-processing")
 
     # Post process the output of the model into an answer (or an error if the question could not be answered)
@@ -197,24 +221,48 @@ def run_onnx(raw_data):
 
 
 def run_inference():
-    input = "{\"question\": \"Which NFL team represented the NFC at Super Bowl 50?\", \"context\": \"Super Bowl 50 was an American football game to determine the champion of the National Football League (NFL) for the 2015 season. The American Football Conference (AFC) champion Denver Broncos defeated the National Football Conference (NFC) champion Carolina Panthers 24–10 to earn their third Super Bowl title. The game was played on February 7, 2016, at Levi's Stadium in the San Francisco Bay Area at Santa Clara, California. As this was the 50th Super Bowl, the league emphasized the 'golden anniversary' with various gold-themed initiatives, as well as temporarily suspending the tradition of naming each Super Bowl game with Roman numerals (under which the game would have been known as 'Super Bowl L'), so that the logo could prominently feature the Arabic numerals 50.\"}"
-    if torch_model:
-        if os.getenv('NITER') and os.getenv('MAX_SEQ_LENGTH'):
-            print(run_pytorch(input))
+    input_data=[]
+    if input_args.question and input_args.context:
+        input_data.append([input_args.context,input_args.question])
+    elif os.path.exists(input_args.inputpath):
+        if pathlib.Path(input_args.inputpath).suffix =='.csv':
+            csv_data = pd.read_csv(input_args.inputpath)
+            input_data = [row for row in csv_data.values]
         else:
-            print(
-                "Some Environment variables['NITER','MAX_SEQ_LENGTH']  are not set. Exiting")
-            exit(0)
-    elif onnx_session:
-        if os.getenv('MODEL_TYPE') and os.getenv('DEVICE') and os.getenv('NITER') and os.getenv('MAX_SEQ_LENGTH'):
-            print(run_onnx(input))
-        else:
-            print(
-                "Some Environment Variables['MODEL_TYPE', 'DEVICE', 'NITER', 'MAX_SEQ_LENGTH'] are not set. Exiting...")
-            exit(0)
+            sys.exit('Input file extension is not supported')
+    else:
+        sys.exit("Input not found.")
+    rows=[]
+    for context,question in input_data:
+        if torch_model:
+            if input_args.niter and input_args.max_seq_length:
+                results=run_pytorch(question,context)
+                print('Question:',question)
+                print('Answer:',results['answer'])
+            else:
+                print(
+                    "Some Arguments['NITER','MAX_SEQ_LENGTH']  are not set. Exiting")
+                exit(0)
+        elif onnx_session:
+            if input_args.modeltype and input_args.device and input_args.niter and input_args.max_seq_length:
+                results=run_onnx(question,context)
+                print('Question:',question)
+                print('Answer:',results['answer'])
+            else:
+                print(
+                    "Some Arguments['MODEL_TYPE', 'DEVICE', 'NITER', 'MAX_SEQ_LENGTH'] are not set. Exiting...")
+                exit(0)
+        rows.append([context,question,results['answer']])
+    headers = ['Context','Question', 'Answer']
+    answers = pd.DataFrame(rows, columns=headers)
+    if os.path.exists(os.path.dirname(input_args.outputpath)) and pathlib.Path(input_args.outputpath).suffix =='.csv':
+        answers.to_csv(input_args.outputpath, index=False)
+        print('Results is stored in Output CSV file')
+    else:
+        print('Output is not stored in Output CSV file as ouputpath not exists')
 
 
 if __name__ == '__main__':
-    tokenizer = onnx_session = torch_model = None
+    tokenizer = onnx_session = torch_model = input_args = None
     init()
     run_inference()

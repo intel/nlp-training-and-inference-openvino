@@ -1,5 +1,5 @@
 # coding=utf-8
-# Copyright 2020 The HuggingFace Team All rights reserved.
+# Copyright 2022 The HuggingFace Team All rights reserved.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """
-A subclass of `Trainer` specific to Question-Answering tasks
+A subclass of `OVTrainer` specific to Question-Answering tasks
 """
 # You can also adapt this script on your own question answering task. Pointers for this are left as comments.
 # ==============================================================================
@@ -24,16 +24,12 @@ A subclass of `Trainer` specific to Question-Answering tasks
 # Reference:
 # https://github.com/huggingface/transformers/blob/main/examples/pytorch/question-answering/trainer_qa.py
 #
-from transformers import Trainer, is_torch_tpu_available
 from transformers.trainer_utils import PredictionOutput
 
-
-if is_torch_tpu_available():
-    import torch_xla.core.xla_model as xm
-    import torch_xla.debug.metrics as met
+from optimum.intel.openvino.trainer import OVTrainer
 
 
-class QuestionAnsweringTrainer(Trainer):
+class QuestionAnsweringOVTrainer(OVTrainer):
     def __init__(self, *args, eval_examples=None, post_process_function=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.eval_examples = eval_examples
@@ -61,8 +57,7 @@ class QuestionAnsweringTrainer(Trainer):
             self.compute_metrics = compute_metrics
 
         if self.post_process_function is not None and self.compute_metrics is not None:
-            eval_preds = self.post_process_function(
-                eval_examples, eval_dataset, output.predictions)
+            eval_preds = self.post_process_function(eval_examples, eval_dataset, output.predictions)
             metrics = self.compute_metrics(eval_preds)
 
             # Prefix all keys with metric_key_prefix + '_'
@@ -74,12 +69,7 @@ class QuestionAnsweringTrainer(Trainer):
         else:
             metrics = {}
 
-        if self.args.tpu_metrics_debug or self.args.debug:
-            # tpu-comment: Logging debug metrics for PyTorch/XLA (compile, execute times, ops, etc.)
-            xm.master_print(met.metrics_report())
-
-        self.control = self.callback_handler.on_evaluate(
-            self.args, self.state, self.control, metrics)
+        self.control = self.callback_handler.on_evaluate(self.args, self.state, self.control, metrics)
         return metrics
 
     def predict(self, predict_dataset, predict_examples, ignore_keys=None, metric_key_prefix: str = "test"):
@@ -104,8 +94,7 @@ class QuestionAnsweringTrainer(Trainer):
         if self.post_process_function is None or self.compute_metrics is None:
             return output
 
-        predictions = self.post_process_function(
-            predict_examples, predict_dataset, output.predictions, "predict")
+        predictions = self.post_process_function(predict_examples, predict_dataset, output.predictions, "predict")
         metrics = self.compute_metrics(predictions)
 
         # Prefix all keys with metric_key_prefix + '_'

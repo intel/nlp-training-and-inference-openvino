@@ -28,10 +28,15 @@ spec:
       restartPolicy: "Never"
       nodeSelector:
         kubernetes.io/hostname: "{{ .Values.nodeselector.trainingnode }}"
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000 
       containers:
         - name: w4-training
-          image: "{{ .Values.image.registry }}/{{ .Values.image.trainingimage }}"
+          image: "{{.Values.image.baseimage}}"
           imagePullPolicy: "IfNotPresent"
+          command: ["/bin/sh"]
+          args: ["-c", "cd /home/training && ls -l run_qat.sh && ./run_qat.sh"]
           env:
             {{- range $key, $val := .Values.trainingenv }}
              - name: {{ $key }}

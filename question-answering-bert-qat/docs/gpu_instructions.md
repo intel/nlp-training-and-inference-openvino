@@ -11,11 +11,11 @@ One the GPU node, please run the below commands
    kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.12.3/nvidia-device-plugin.yml
 ```
 
-2. Replace the below code to pre_install_job.yaml from line 31.
+2. Replace the below code to pre_install_job.yaml from line 34.
 ```
      containers:
         - name: w4-training
-          image: "{{ .Values.image.registry }}/{{ .Values.image.trainingimage }}"
+          image: "{{.Values.image.baseimage}}"
           imagePullPolicy: "IfNotPresent"
           command: ["/bin/sh"]
           args: ["-c", "cd /home/training && ls -l && ./run_qat.sh"]
