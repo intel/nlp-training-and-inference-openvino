@@ -78,15 +78,15 @@ The workflow executes as follows
 
     -   Intel(R) Xeon(R) Platinum 8370C CPU @ 2.80GHz (16 vCPUs)
        
-       -   At least 64 GB RAM.
-.
-    -   Intel(R) Xeon(R) with NVIDIA* GPU.
+       	-   At least 64 GB RAM  
+
+    -   Intel(R) Xeon(R) with NVIDIA* GPU  
       
-       -   At least 112 GB RAM.  
+       	-   At least 112 GB RAM  
 
--   At least 256 GB hard drive.
+-   At least 256 GB hard drive
 
--   An Internet connection.
+-   An Internet connection
 
 -   Ubuntu\* 20.04 LTS
     
@@ -117,8 +117,7 @@ The workflow executes as follows
 ## Download source code
 
 ```
-git clone  https://github.com/intel/nlp-training-and-inference-openvino.git
-
+git clone  https://github.com/intel/nlp-training-and-inference-openvino.git  
 cd nlp-training-and-inference-openvino/question-answering-bert-qat
 ```
 ## Modify helmchart/qat/values.yaml
@@ -352,7 +351,7 @@ This is an optional step. Use Azure Storage for multi node kubernetes setup if y
   ```
   * Note
   ```
-     We can also create mount point and mount the share by proceeding following steps - Go to created File share in Azure Portal and click connect. It will provide steps to connect the file share from a Linux,Windows and Macos.
+  We can also create mount point and mount the share by proceeding following steps - Go to created File share in Azure Portal and click connect. It will provide steps to connect the file share from a Linux,Windows and Macos.
   ```
   ### Usage of Azure Storage in helm
   * Clone the git_repo in /mnt/MyAzureFileShare and make it as your working directory
@@ -372,37 +371,37 @@ This is an optional step. Use Azure Storage for multi node kubernetes setup if y
 If encounters connection refused as shown below
 
 ```
-  Error: INSTALLATION FAILED: Kubernetes cluster unreachable: Get "http://localhost:8080/version": dial tcp 127.0.0.1:8080: connect: connection refused
+Error: INSTALLATION FAILED: Kubernetes cluster unreachable: Get "http://localhost:8080/version": dial tcp 127.0.0.1:8080: connect: connection refused
 ```
 Set the environment variable
 ```
-   export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
 ```
 
 ### Helm Installation Failed
 If you see this error message:
 
  ```
-   Error: INSTALLATION FAILED: cannot re-use a name that is still in use
+ Error: INSTALLATION FAILED: cannot re-use a name that is still in use
  ```
 Run the command:
 ```
-   helm uninstall qatchart
+helm uninstall qatchart
 ``` 
 Then install it again
 ```
-   helm uninstall qatchart
+helm uninstall qatchart
 ```
 ### Helm timeout
  If the training is taking a long time, you may see a timeout error during helm install command, similar to the text below:
    ```
-	Error: INSTALLATION FAILED: failed pre-install: timed out waiting for the condition
+   Error: INSTALLATION FAILED: failed pre-install: timed out waiting for the condition
    ```
 	
  #### Workaround 1
   Based on the system performance please add --timeout <seconds> to the helm command
   ```
-    helm install qatchart qat --timeout <time>
+  helm install qatchart qat --timeout <time>
   ```
   `time` value. For the above H/W configuration and with MAX_TRAINING_SAMPLES as 50 it would ideally be 480s. Please increase the timeout if need to finetune on whole dataset.
   
@@ -412,7 +411,7 @@ Then install it again
       when the pod is completed.
   2. Run the command
 	```
-	   helm uninstall qatchart
+	helm uninstall qatchart
 	```
   3. Install the qatchart with just inference as training has completed
 	```
