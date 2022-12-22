@@ -437,12 +437,12 @@ Uninstalling k3s: (If required)
 Remove the helm chart
 
 ```
-	   helm uninstall qatchart
+helm uninstall qatchart
 ```
 Delete any pods of jobs after the execution
 ```
-	kubectl delete pod <pod_name>
-	kubectl delete job <job_name>
+kubectl delete pod <pod_name>
+kubectl delete job <job_name>
 ```
 	
 
