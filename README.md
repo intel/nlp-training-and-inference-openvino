@@ -1,5 +1,5 @@
 # Overview 
-This repository contains NLP use cases build using Intel's different AI components with a focus on the OpenVINO™ toolkit. Each use case is supported with detailed documentation present in the respective folder.
+This repository contains NLP use cases build using Intel's different AI components with a focus on the OpenVINO™ toolkit. Each use case is supported with detailed documentation present in the respective folders.
   
   
 
